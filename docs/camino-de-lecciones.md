@@ -78,7 +78,7 @@ Tres formas de sumar minutos:
 
 Son minutos autoreportados.
 
-## Fase 3: Mantenimiento
+## Fase 2: Mantenimiento
 
 Para quienes ya logran la R múltiple y necesitan automatizarla.
 
