@@ -22,3 +22,8 @@ button.rec{background:#d33;color:#fff;border-color:#d33}
 label{display:flex;gap:8px;align-items:center;margin:6px 0}
 meter{width:100%;max-width:260px;height:16px}
 ol{padding-left:20px}
+h3{font-size:.95rem;margin:1rem 0 .4rem;color:var(--muted)}
+.words.texts{flex-direction:column}
+.word button.long{text-align:left;white-space:pre-line;flex:1}
+.words.texts .word{width:100%}
+.word button.static{opacity:1;color:var(--fg);cursor:default}

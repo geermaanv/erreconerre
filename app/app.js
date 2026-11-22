@@ -5,6 +5,11 @@
   try { progress = JSON.parse(localStorage.getItem(KEY)) || {}; } catch {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(progress)); } catch {} };
 
+  LESSONS.forEach((l) => { if (!l.blocks) l.blocks = [{ items: l.words }]; });
+  const uniqueItems = (l) => new Set(l.blocks.flatMap((b) => b.items));
+  let splitMode = true;
+  try { splitMode = localStorage.getItem('r-split-v1') !== '0'; } catch {}
+
   let current = LESSONS[0].id;
 
   function renderNav() {
@@ -18,16 +23,18 @@
       return b;
     }));
     const done = LESSONS.reduce((n, l) => n + Object.keys(progress[l.id] || {}).length, 0);
-    const total = LESSONS.reduce((n, l) => n + l.words.length, 0);
+    const total = LESSONS.reduce((n, l) => n + uniqueItems(l).size, 0);
     $('total').textContent = `Logradas: ${done}/${total}`;
   }
 
-  function speak(text) {
+  function speak(parts) {
     if (!('speechSynthesis' in window)) return;
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'es-AR'; u.rate = 0.8;
-    speechSynthesis.speak(u);
+    [].concat(parts).forEach((t) => {
+      const u = new SpeechSynthesisUtterance(t);
+      u.lang = 'es-AR'; u.rate = 0.8;
+      speechSynthesis.speak(u);
+    });
   }
 
   function renderLesson() {
@@ -39,22 +46,38 @@
     const p = document.createElement('p'); p.textContent = l.intro;
     const ol = document.createElement('ol');
     l.steps.forEach((s) => { const li = document.createElement('li'); li.textContent = s; ol.append(li); });
-    const ul = document.createElement('ul'); ul.className = 'words';
-    l.words.forEach((w) => {
-      const li = document.createElement('li');
-      li.className = 'word' + (progress[l.id]?.[w] ? ' ok' : '');
-      const say = document.createElement('button'); say.textContent = '🔊 ' + w; say.title = 'Escuchar modelo';
-      say.onclick = () => speak(w);
-      const done = document.createElement('button'); done.className = 'done';
-      done.textContent = progress[l.id]?.[w] ? '✓' : '○'; done.title = 'Marcar como lograda';
-      done.onclick = () => {
-        progress[l.id] = progress[l.id] || {};
-        if (progress[l.id][w]) delete progress[l.id][w]; else progress[l.id][w] = true;
-        save(); render();
-      };
-      li.append(say, done); ul.append(li);
+    sec.append(h, p);
+    if (l.split) {
+      const lab = document.createElement('label');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = splitMode;
+      cb.onchange = () => { splitMode = cb.checked; try { localStorage.setItem('r-split-v1', splitMode ? '1' : '0'); } catch {} render(); };
+      lab.append(cb, 'Separar la doble R (ar · roz)');
+      sec.append(lab);
+    }
+    sec.append(ol);
+    l.blocks.forEach((b) => {
+      if (b.title) { const h3 = document.createElement('h3'); h3.textContent = b.title; sec.append(h3); }
+      const ul = document.createElement('ul'); ul.className = 'words' + (l.long ? ' texts' : '');
+      [...new Set(b.items)].forEach((w) => {
+        const parts = l.split && splitMode && !/\s/.test(w) ? Split.splitTrill(w) : null;
+        const li = document.createElement('li');
+        li.className = 'word' + (progress[l.id]?.[w] ? ' ok' : '');
+        const say = document.createElement('button');
+        say.textContent = (l.noTts ? '' : '🔊 ') + (parts ? parts.join(' · ') : w);
+        if (l.long) say.className = 'long';
+        if (l.noTts) { say.disabled = true; say.className = 'static'; }
+        else { say.title = 'Escuchar modelo'; say.onclick = () => speak(parts ? [...parts, w] : w); }
+        const done = document.createElement('button'); done.className = 'done';
+        done.textContent = progress[l.id]?.[w] ? '✓' : '○'; done.title = 'Marcar como lograda';
+        done.onclick = () => {
+          progress[l.id] = progress[l.id] || {};
+          if (progress[l.id][w]) delete progress[l.id][w]; else progress[l.id][w] = true;
+          save(); render();
+        };
+        li.append(say, done); ul.append(li);
+      });
+      sec.append(ul);
     });
-    sec.append(h, p, ol, ul);
     $('recorder').hidden = false;
     $('trillBox').hidden = !l.trill;
   }
