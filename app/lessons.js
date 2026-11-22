@@ -122,3 +122,5 @@ const LESSONS = [
     ] }],
   },
 ];
+
+if (typeof module !== "undefined") module.exports = LESSONS;
