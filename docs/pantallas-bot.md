@@ -35,43 +35,42 @@ Antes de empezar:
 
 ## 2. Test inicial
 
-Una pregunta por pantalla, solo botones. Fija la práctica de hoy. No se muestra como resultado.
+Una sola pregunta, solo botones. Fija la práctica de hoy. No se muestra como resultado, y se puede saltar.
 
 ```
-1/4  ¿Qué te cuesta?
-[ La R simple (pero, cara) ]
-[ La R múltiple (perro, carro) ]
-[ Las dos ]
-[ No estoy seguro ]
+Probá decir en voz alta "arra" y "arroz". ¿Qué pasa?
+
+[ No sale, o sale sin vibrar ]
+[ "arra" me sale a veces ]
+[ Me salen las dos ]
+[ Me salen palabras y frases, a veces me falla ]
+[ Saltar: empiezo desde el principio ]
 ```
 
-```
-2/4  ¿Qué sale cuando intentás la R múltiple?
-[ Un sonido de garganta ]   [ Una L o una D ]
-[ Una sola tocada ]         [ Nada o no sé ]
-```
+La respuesta fija la práctica de hoy así [propuesta, a revisar]:
+
+| Respuesta | Práctica de hoy |
+|---|---|
+| No sale, o sale sin vibrar | 1 |
+| "arra" me sale a veces | 3 |
+| Me salen las dos | 5 |
+| Me salen palabras y frases, a veces me falla | 8 |
+| Saltar | 1 |
+
+Cierre (ejemplo):
 
 ```
-3/4  Probá esto: decí "ar" varias veces con el aire pasando
-     por la lengua. ¿Qué pasa?
-[ Sale una tocada clara ]  [ Se traba ]  [ Suena distinto cada vez ]
-```
-
-```
-4/4  Probá "arra". ¿Vibra la lengua alguna vez?
-[ Sí, a veces ]  [ Sí, siempre ]  [ Nunca ]
-```
-
-Resultado (ejemplo):
-
-```
-Listo. Empezamos por la práctica 1. Todas las demás están abiertas
+Listo. Empezamos por la práctica 3. Todas las demás están abiertas
 cuando quieras.
 
 [ Ir al menú ]
 ```
 
-Si en la pregunta 2 la persona elige "Nada o no sé" y en la 4 "Nunca", se agrega: "Si hace tiempo que no sale ningún sonido, una evaluación con un fonoaudiólogo puede descartar causas físicas. Podés practicar igual." [propuesta]
+Con la primera respuesta se agrega: "Si hace tiempo que no sale ningún sonido de R, una evaluación con un fonoaudiólogo puede descartar causas físicas. Podés practicar igual." [propuesta]
+
+Con la cuarta se agrega: "Si ya te sale en frases, podés marcar tus hitos en Mi progreso y usar Mantenimiento." [propuesta]
+
+Esta versión no pregunta si cuesta la R simple o la múltiple. El camino asume la R múltiple, y la práctica 1 ya trabaja la R de `ar er ir or ur`.
 
 ## 3. Menú principal
 
@@ -374,7 +373,7 @@ Ajustes
 ## Preguntas abiertas
 
 1. ¿La teoría de cada práctica se muestra completa o por pasos? Depende de cuánto texto escriba el autor.
-2. ¿El test inicial es realmente necesario, o alcanza con empezar en la práctica 1? Cuatro preguntas añaden fricción.
+2. El test inicial es ahora de una sola pregunta y se puede saltar. ¿La correspondencia entre respuestas y práctica de hoy es la correcta?
 3. Máximo de recordatorios por día y horarios permitidos.
 4. Si "Mantenimiento" debería abrirse antes para quien lo pida.
 5. Texto exacto de los avisos legales y de salud, que conviene revisar con un profesional.

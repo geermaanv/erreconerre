@@ -30,9 +30,9 @@ Pantalla principal del bot:
 
 ## Test inicial
 
-Un autotest corto, sin micrófono, con tareas concretas que la persona prueba y responde. Primero pregunta qué le pasa (R simple, R múltiple o ambas, y qué sale en su lugar). Solo fija cuál es la práctica de hoy al empezar. No se muestra como nivel ni como diagnóstico, y no bloquea ninguna práctica. [propuesta]
+Una sola pregunta, sin micrófono: la persona prueba decir "arra" y "arroz" y elige qué pasa. Solo fija cuál es la práctica de hoy al empezar. Se puede saltar. No se muestra como nivel ni como diagnóstico, y no bloquea ninguna práctica. El detalle de las respuestas está en `pantallas-bot.md`. [propuesta]
 
-Si el test sugiere que no sale ningún sonido de R, el bot recomienda además una evaluación con un fonoaudiólogo, por la posibilidad de causas estructurales.
+Si responde que no sale, el bot recomienda además una evaluación con un fonoaudiólogo, por la posibilidad de causas estructurales.
 
 ## Hitos
 
