@@ -1,6 +1,6 @@
-# Camino de lecciones: borrador v0.2
+# Camino de lecciones: borrador v0.3
 
-Estado: borrador para revisar. Fecha: 2026-11-22.
+Estado: borrador para revisar. Fecha: 2026-11-22. Cambios en v0.3: menú abierto con práctica de hoy resaltada, repetición libre, plataforma decidida (bot de Telegram primero), secciones de test inicial, datos y comunidad.
 
 Este documento no es un tratamiento clínico ni reemplaza a un fonoaudiólogo. Es la reconstrucción, hecha de memoria 14 años después, del método que usó el autor del proyecto para lograr la R múltiple a los 42 años.
 
@@ -15,8 +15,24 @@ Cada parte lleva una etiqueta de confianza:
 
 1. **Separar la doble R.** No se intenta decir la palabra completa de corrido al principio. "Arroz" de corrido no sale. Se parte justo antes de la R que vibra: `ar` + `roz`. [recordado]
 2. **Volumen de práctica.** Lo que funcionó fue practicar muchas horas, solo, en momentos libres. La métrica central son los minutos acumulados ("horas de vuelo"). [recordado]
-3. **Sin niveles visibles.** La persona ve minutos, racha e hitos. El bot dice "tu próxima práctica es esta". Internamente hay un orden de lecciones. [decidido]
-4. **Público adulto.** Tono sobrio, sin gamificación infantil. [decidido]
+3. **Sin niveles visibles.** La persona ve minutos, racha e hitos. Internamente hay un orden de lecciones que solo decide cuál es la práctica de hoy. [decidido]
+4. **Libertad total.** Todas las prácticas están abiertas desde el principio. La persona puede repetir cualquiera cuando quiera. [decidido]
+5. **Público adulto.** Tono sobrio, sin gamificación infantil. [decidido]
+
+## Menú y navegación
+
+Pantalla principal del bot:
+
+- Una grilla de 3 por 3 con las nueve prácticas (las lecciones 1 a 9 de la Fase 1), nombradas por su contenido. Ninguna está bloqueada. [decidido]
+- La práctica de hoy aparece resaltada. Si los botones no admiten estilos propios, se marca con un símbolo en la etiqueta (por ejemplo "▶"). [por validar, depende de lo que permita Telegram]
+- Debajo de la grilla, una fila de accesos: "Mi progreso", "Mantenimiento" y "Comunidad". "Mantenimiento" podría ocultarse hasta que se marque el hito correspondiente. [propuesta]
+- Dentro de cada práctica: teoría con botón "Entendí", las listas, "Empecé" y "Terminé", y la pregunta "¿Cómo te fue?".
+
+## Test inicial
+
+Un autotest corto, sin micrófono, con tareas concretas que la persona prueba y responde. Primero pregunta qué le pasa (R simple, R múltiple o ambas, y qué sale en su lugar). Solo fija cuál es la práctica de hoy al empezar. No se muestra como nivel ni como diagnóstico, y no bloquea ninguna práctica. [propuesta]
+
+Si el test sugiere que no sale ningún sonido de R, el bot recomienda además una evaluación con un fonoaudiólogo, por la posibilidad de causas estructurales.
 
 ## Hitos
 
@@ -33,7 +49,7 @@ Cada hito tiene dos momentos, y lo marca la persona:
 
 **Estable:** que salga en al menos 5 días distintos dentro de una semana. [recordado, definido por el autor]
 
-Marcar "Primera vez" no mueve el camino. Marcar "Estable" sí puede adelantar la práctica. Todo hito se puede desmarcar sin consecuencias. [propuesta]
+Marcar "Primera vez" no cambia cuál es la práctica de hoy. Marcar "Estable" sí puede adelantarla. Nunca bloquea nada. Todo hito se puede desmarcar sin consecuencias. [propuesta]
 
 Hitos de constancia (horas acumuladas, semanas seguidas) van aparte de los de habilidad. Los umbrales serían arbitrarios y la app no debe prometer ninguna cifra de horas necesarias.
 
@@ -63,20 +79,27 @@ Notas:
 
 Al terminar una práctica la persona califica: **Salió**, **A medias**, **No salió**.
 
-- Avanza a la lección siguiente con "Salió" en 3 sesiones de 3 días distintos.
-- Repite con "A medias".
-- Con "No salió" 3 veces seguidas vuelve a la lección anterior.
+**Práctica de hoy:** la primera lección de la Fase 1 que todavía no se dio por superada.
+
+- Una lección se da por superada con "Salió" en 3 sesiones de 3 días distintos.
+- Con "A medias", la práctica de hoy sigue siendo la misma.
+- Repetir otra lección es libre. No cambia la práctica de hoy. Sus calificaciones se guardan por lección y suman minutos.
+- Con "No salió" 3 veces seguidas en la práctica de hoy, el bot sugiere repetir la lección anterior. Es una sugerencia, la decisión es de la persona.
 - Si pasan varias semanas sin avanzar, el bot sugiere consultar a un fonoaudiólogo (umbral exacto por definir).
 
 ## Registro de práctica
 
 Tres formas de sumar minutos:
 
-1. **Automático**, de las sesiones guiadas.
+1. **Automático**, de las sesiones guiadas: el tiempo entre "Empecé" y "Terminé".
 2. **Cronómetro libre**: "empezar práctica", para cuando se practica por cuenta propia.
 3. **Carga manual**, con atajos (5, 10, 20, 30 minutos).
 
-Son minutos autoreportados.
+Son minutos autoreportados. Suman sin importar qué lección se practique.
+
+## Datos por persona
+
+Mínimos, en un documento chico por usuario: práctica de hoy, calificaciones por lección, minutos por día con su origen, hitos con fecha y horas acumuladas, notas cortas y palabras del mantenimiento con su calendario. Se identifica por el usuario de Telegram. Habrá un comando para borrar todos los datos propios, porque son datos de salud. [propuesta]
 
 ## Fase 2: Mantenimiento
 
@@ -105,4 +128,12 @@ No se encontró respaldo ni contradicción para el método de separar la doble R
 2. Sensaciones físicas que distinguen un intento correcto (no recordadas). Podrían surgir del registro de los primeros usuarios.
 3. Minutos por lección y criterio de avance: confirmar o corregir las propuestas.
 4. Umbral para sugerir consultar a un profesional.
-5. Plataforma: bot de Telegram, Mini App o aplicación web. Pendiente de decidir.
+5. Capacidades reales de los botones de Telegram (estilos, límites de mensajes) y de las Mini Apps: no verificadas.
+
+## Plataforma y comunidad
+
+- **Primera versión: bot de Telegram.** El autor asume el riesgo de depender de Telegram. Aporta recordatorios, identidad y continuidad entre dispositivos sin cuentas propias. [decidido]
+- El contenido de las lecciones se guarda en un archivo estructurado, separado del código del bot, para poder reutilizarlo en una app propia más adelante. [propuesta]
+- Señales para evaluar una app propia: quejas porque el chat se llena de mensajes, pedidos de gráficos, o personas que no usan Telegram. [propuesta]
+- **Comunidad:** un grupo de Telegram enlazado desde el bot. Sin moderación dentro del bot por ahora. [decidido]
+- **Fuera por ahora:** modo manos libres, audio modelo, micrófono y detector de vibración. [decidido]
