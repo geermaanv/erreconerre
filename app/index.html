@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pronunciar la R</title>
+<meta name="theme-color" content="#2a6df4">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1>Pronunciar la R</h1><div id="total" class="muted"></div></header>
+<main>
+  <nav id="lessons" aria-label="Lecciones"></nav>
+  <section id="lesson"></section>
+  <section id="recorder" class="card" hidden>
+    <h2>Práctica con micrófono</h2>
+    <div class="row">
+      <button id="micBtn" class="primary">Activar micrófono</button>
+      <button id="recBtn" disabled>Grabar</button>
+      <button id="playBtn" disabled>Escuchar grabación</button>
+    </div>
+    <label>Nivel <meter id="level" min="0" max="1" value="0"></meter></label>
+    <div id="trillBox" hidden>
+      <label>Vibración <meter id="trill" min="0" max="1" low="0.2" high="0.4" optimum="0.6" value="0"></meter></label>
+      <div id="trillStatus" class="muted"></div>
+    </div>
+    <p class="muted" id="micMsg"></p>
+  </section>
+</main>
+<script src="dsp.js"></script>
+<script src="lessons.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
