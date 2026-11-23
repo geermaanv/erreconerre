@@ -20,24 +20,55 @@ const body = () => last.text.split('\n\n').slice(1).join('\n\n');
 const maxCb = () => Math.max(...callbacks().filter(Boolean).map((d) => Buffer.byteLength(d)));
 
 (async () => {
-  await msg('/start'); assert(/entrenamiento para la R múltiple/.test(last.text));
-  await tap('ts'); assert(/arra/.test(last.text) && last.kb.length === 5);
-  await tap('tr:1'); assert(/práctica 3/.test(last.text));
-  await tap('m'); assert(/Hoy: práctica 3/.test(last.text));
+  await msg('/start'); assert(/entrenamiento para la R múltiple/.test(last.text) && /Cómo funciona/.test(labels().join()));
+  // introducción de 5 pantallas
+  await tap('in:0'); assert(/1\/5/.test(last.text));
+  for (let i = 1; i < 5; i++) await tap(`in:${i}`);
+  assert(/5\/5/.test(last.text) && labels().includes('Empezar'));
+  for (const t of require('./content.js').INTRO) assert(t.length < 1500, 'pantalla de intro corta');
+
+  // test de 2 preguntas: intermitente -> falla en "arra" -> práctica 3
+  await tap('ts'); assert(/perro/.test(last.text) && last.kb.length === 6);
+  await tap('t1:4'); assert(/Dónde te falla/.test(last.text));
+  await tap('t2:0'); assert(/Sale a veces/.test(last.text) && /práctica 3/.test(last.text));
+  await tap('m'); assert(/Hoy: práctica 3/.test(last.text) && /Objetivo:/.test(last.text));
   assert(labels().includes('▶ 3 · Unión') && last.kb.slice(0, 3).every((r) => r.length === 3), 'menú 3x3 con ▶');
 
-  await tap('p:3'); assert(/Entendí/.test(labels().join()), 'teoría la primera vez');
-  await tap('l:3:0'); assert(/Unión/.test(last.text));
-  await tap('p:5'); await tap('l:5:0'); assert(/→/.test(last.text) && /·/.test(body()), 'separación con paso intermedio');
-  await tap('sp:5:0'); assert(!/·/.test(body()), 'ver sin separar');
+  // perfil gutural: explicación propia
+  await tap('ts'); await tap('t1:1'); assert(/garganta/.test(last.text));
+  // perfil sustitución: alerta de consulta
+  await tap('ts'); await tap('t1:2'); assert(/fonoaudiólogo/.test(last.text) && /ortodoncista/.test(last.text));
+  // intermitente con fallas en palabras: práctica 6 y mantenimiento abierto
+  await tap('ts'); await tap('t1:4'); await tap('t2:1'); assert(/práctica 6/.test(last.text) && /Mantenimiento ya está abierto/.test(last.text));
+  await tap('ts'); await tap('t1:4'); await tap('t2:0');
+
+  // teoría por páginas
+  await tap('p:3'); assert(/\(1\/3\)/.test(last.text) && /Objetivo:/.test(last.text));
+  await tap('th:3:1'); await tap('th:3:2'); assert(labels().includes('Entendí, a practicar'));
+  await tap('l:3:0'); assert(/Unión/.test(last.text) && labels().includes('Modo memoria') && !labels().includes('Preparación'));
+  await tap('me:3:0'); assert(/Modo memoria/.test(last.text) && /arra/.test(last.text));
+  await tap('mm:3'); await tap('mn:10:3'); assert(/Anotado: 10 min/.test(last.text));
+  assert.strictEqual(store.get(CHAT).minutes.slice(-1)[0].practice, 3, 'minutos de memoria van a la práctica');
+  await tap('p:5'); await tap('th:5:0'); await tap('l:5:0'); assert(/→/.test(last.text) && /·/.test(body()), 'separación con paso intermedio');
+  assert(labels().includes('Escucha'));
+  await tap('es:5'); assert(/pero \/ perro/.test(last.text));
+  await tap('l:5:0'); await tap('sp:5:0'); assert(!/·/.test(body().split('\n\n')[1] || ''), 'ver sin separar');
   await tap('sp:5:0');
+
+  // conteo de 5 intentos
+  await tap('go:3:0'); assert(/Hoy fijate solo/.test(last.text) && labels().includes('✓ Salió'));
+  for (let i = 0; i < 4; i++) await tap('ok');
+  await tap('ko'); assert(/4 de 5. Pasá a la línea siguiente/.test(last.text));
+  await tap('cx');
 
   // Una práctica guiada con 3 "Salió" en 3 días distintos supera la práctica de hoy
   for (let d = 0; d < 3; d++) {
-    await tap('go:3'); assert(/Practicando/.test(last.text));
-    await tap('end'); assert(/¿Cómo te fue\?/.test(last.text));
-    // llevar la sesión a un día distinto simulando el día en el registro
+    await tap('go:3:0'); assert(/Practicando/.test(last.text));
+    await tap('end');
+    if (d === 0) assert(/¿Cómo te fue\?/.test(last.text) && !/vibración continua/.test(last.text), 'sin control la primera vez');
+    else { assert(/vibración continua/.test(last.text), 'pregunta de control'); await tap('ct:y'); }
     await tap('rt:s');
+    if (d === 0) assert(/grabarte/.test(last.text), 'sugerencia de grabarse');
     const u = store.get(CHAT); u.minutes[u.minutes.length - 1].day = L.addDays(L.dayKey(), -(2 - d)); u.ratings[u.ratings.length - 1].day = L.addDays(L.dayKey(), -(2 - d));
     store.set(CHAT, u);
   }
@@ -45,8 +76,26 @@ const maxCb = () => Math.max(...callbacks().filter(Boolean).map((d) => Buffer.by
   assert(L.streak(u1, L.dayKey()) >= 3, 'racha');
 
   // Tres "No salió" seguidos en la práctica de hoy sugieren volver a la anterior
-  for (let i = 0; i < 3; i++) { await tap('go:4'); await tap('end'); await tap('rt:n'); }
-  assert(/Ir a la práctica 3/.test(labels().join()), 'sugerencia de repetir la anterior');
+  for (let i = 0; i < 3; i++) { await tap('go:4:0'); await tap('end'); await tap('ct:n'); await tap('rt:n'); }
+  assert(/Ir a la 3/.test(labels().join()) && labels().includes('Si no sale'), 'sugerencia de rutas y de la anterior');
+  await tap('sn:4:0'); assert(/Si no sale \(1\/6\)/.test(last.text) && /Ruta 5/.test(last.text), 'rutas en orden del perfil intermitente');
+  await tap('l:4:0'); assert(labels().includes('Si no sale') && labels().includes('Preparación'));
+  await tap('pp:4'); assert(/Tres veces como máximo/.test(last.text));
+
+  // "Salió" con un solo golpe no cuenta para superar
+  const L2 = require('./logic.js');
+  assert(!L2.salioOk({ rating: 's', ctrl: 'n' }) && L2.salioOk({ rating: 's', ctrl: 'y' }));
+
+  // Habla (fase 2)
+  await tap('f2'); assert(/Escalón 1 de 5/.test(last.text));
+  await tap('f2:u'); assert(/Escalón 2 de 5/.test(last.text));
+  await tap('go:10:0'); assert(/Habla/.test(last.text) && !labels().includes('✓ Salió'));
+  await tap('end'); await tap('rt:s'); assert(/Anotado/.test(last.text));
+
+  // Ajustes: consulta, resumen y seguridad
+  await tap('se'); await tap('cs'); assert(/frenillo/.test(last.text));
+  await tap('cq'); assert(/Qué llevar a la consulta/.test(last.text) && /práctica 3:/.test(last.text));
+  await tap('sg'); assert(/3 soplos/.test(last.text));
 
   // Práctica libre y minutos manuales
   await tap('fr'); await tap('fr:c'); await tap('mn:20'); assert(/Anotado: 20 min/.test(last.text));
@@ -67,6 +116,7 @@ const maxCb = () => Math.max(...callbacks().filter(Boolean).map((d) => Buffer.by
   for (let i = 0; i < 7; i++) await tap('mg:s');
   assert(/Salió 7/.test(last.text), last.text);
   await tap('mz'); await tap('mad'); await msg('Israel'); assert(/Agregada: israel/.test(last.text));
+  await tap('mad'); await msg('El perro de  Rosa'); assert(/Agregada: el perro de rosa/.test(last.text), 'mazo acepta frases');
   await tap('ma'); assert(/Hoy toca: (\d+) tarjetas/.test(last.text));
 
   // Comunidad y ajustes
@@ -74,7 +124,7 @@ const maxCb = () => Math.max(...callbacks().filter(Boolean).map((d) => Buffer.by
   await tap('se'); await tap('ex'); assert(/minutes/.test(last.text) || /demasiado largos/.test(last.text));
 
   // Largo de callback_data (límite de Telegram: 64 bytes) en todas las pantallas probadas
-  for (const d of ['m', 'p:5', 'l:9:9', 'hk:espontanea', 'pr', 'ma']) { await tap(d); assert(maxCb() <= 64, d); }
+  for (const d of ['m', 'p:5', 'l:9:9', 'l:5:0', 'sn:4:5', 'me:5:0', 'hk:espontanea', 'pr', 'ma', 'se', 'f2']) { await tap(d); assert(maxCb() <= 64, d); }
 
   // Borrar datos
   await tap('dl'); assert(/No se puede deshacer/.test(last.text));

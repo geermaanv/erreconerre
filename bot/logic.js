@@ -6,8 +6,9 @@ function addDays(key, n) { const d = new Date(key + 'T12:00:00Z'); d.setUTCDate(
 function fmtMin(total) { const h = Math.floor(total / 60), m = total % 60; return h ? `${h} h ${m} min` : `${m} min`; }
 
 const newUser = () => ({
-  start: 1, testDone: false, minutes: [], ratings: [], hitos: {}, notes: [],
+  start: 1, testDone: false, perfil: null, minutes: [], ratings: [], hitos: {}, notes: [],
   deck: null, dose: null, sinSeparar: false, session: null, pending: null, awaiting: null,
+  flags: {}, rutas: [], fase2: 0, mantAbierto: false,
 });
 
 const totalMinutes = (u) => u.minutes.reduce((s, e) => s + e.min, 0);
@@ -29,8 +30,10 @@ const minutesInWindow = (u, today, from, to) => {
   return u.minutes.filter((e) => e.day >= lo && e.day <= hi).reduce((s, e) => s + e.min, 0);
 };
 
+// Un "Salió" cuenta si la pregunta de control no fue "no" (un solo golpe).
+const salioOk = (r) => r.rating === 's' && r.ctrl !== 'n';
 // Una práctica se supera con "Salió" en 3 días distintos.
-const salioDays = (u, p) => new Set(u.ratings.filter((r) => r.practice === p && r.rating === 's').map((r) => r.day));
+const salioDays = (u, p) => new Set(u.ratings.filter((r) => r.practice === p && salioOk(r)).map((r) => r.day));
 const superada = (u, p) => salioDays(u, p).size >= 3;
 function hoy(u) {
   for (let p = u.start; p <= 9; p++) if (!superada(u, p)) return p;
@@ -38,6 +41,16 @@ function hoy(u) {
 }
 const lastRatings = (u, p, n) => u.ratings.filter((r) => r.practice === p).slice(-n).map((r) => r.rating);
 const hasHistory = (u, p) => u.ratings.some((r) => r.practice === p) || u.minutes.some((e) => e.practice === p);
+
+const guidedSessions = (u) => u.ratings.length;
+
+// Derivación: 12 sesiones o 4 semanas en las prácticas 1 a 3 sin ningún "Salió", después de probar rutas alternativas.
+function derivacion(u, today) {
+  const r = u.ratings.filter((x) => x.practice >= 1 && x.practice <= 3);
+  if (!r.length || r.some(salioOk) || !u.rutas.length) return false;
+  const first = r.map((x) => x.day).sort()[0];
+  return r.length >= 12 || first <= addDays(today, -28);
+}
 
 // Mantenimiento: escalera de intervalos 1, 2, 4, 8, 16 días.
 function dueCards(u, today, max = 7) {
@@ -50,4 +63,4 @@ function grade(card, g, today) {
   card.due = addDays(today, INTERVALOS[card.box]);
 }
 
-module.exports = { dayKey, addDays, fmtMin, newUser, totalMinutes, streak, daysInLast7, minutesInWindow, salioDays, superada, hoy, lastRatings, hasHistory, dueCards, grade, INTERVALOS };
+module.exports = { salioOk, guidedSessions, derivacion, dayKey, addDays, fmtMin, newUser, totalMinutes, streak, daysInLast7, minutesInWindow, salioDays, superada, hoy, lastRatings, hasHistory, dueCards, grade, INTERVALOS };
