@@ -390,7 +390,7 @@ async function handle(update, api) {
   const m = cb ? cb.message : msg;
   if (!m || !m.chat || m.chat.type !== 'private') return;
   const chat = m.chat.id, ctx = {};
-  const u = store.get(chat) || L.newUser();
+  const u = Object.assign(L.newUser(), store.get(chat) || {}); // completa campos de versiones anteriores
   let screen, msgId = null;
   if (cb) { await api.answer(cb.id); msgId = m.message_id; screen = route(u, cb.data || 'm', ctx); }
   else if (msg.text) screen = onText(u, msg.text, ctx);
