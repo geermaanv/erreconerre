@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Por fin la R — Practicá la R múltiple, a cualquier edad</title>
+<meta name="description" content="Un método paso a paso para adultos que no pueden pronunciar la R múltiple (rr). Práctica diaria guiada en Telegram, gratis.">
+<meta property="og:title" content="Por fin la R — Practicá la R múltiple, a cualquier edad">
+<meta property="og:description" content="Práctica diaria guiada para adultos que no pueden pronunciar la R múltiple. Gratis, en Telegram.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#1f4d3a">
+<style>
+:root{
+  --bg:#faf8f4; --fg:#1d2420; --muted:#5b655f; --card:#ffffff; --line:#e4e0d6;
+  --accent:#1f4d3a; --accent-fg:#ffffff; --soft:#e9f1ec;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#141a17; --fg:#eef1ee; --muted:#a3ada7; --card:#1c2420; --line:#2b352f;
+    --accent:#6fcf9f; --accent-fg:#0d1a13; --soft:#1f2b25; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+header{padding:20px 0}
+.brand{font-weight:700;letter-spacing:.02em;color:var(--accent);text-decoration:none}
+.hero{padding:48px 0 32px}
+h1{font-size:clamp(2rem,6vw,3rem);line-height:1.15;margin:0 0 16px}
+h2{font-size:1.5rem;margin:0 0 12px}
+.lead{font-size:1.2rem;color:var(--muted);margin:0 0 28px}
+.btn{display:inline-block;background:var(--accent);color:var(--accent-fg);
+  padding:14px 24px;border-radius:12px;font-weight:600;text-decoration:none;border:0;
+  font-size:1rem;cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+section{padding:36px 0;border-top:1px solid var(--line)}
+.steps{display:grid;gap:14px;padding:0;margin:20px 0 0;list-style:none;counter-reset:s}
+.steps li{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:16px 18px 16px 58px;position:relative;counter-increment:s}
+.steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:30px;height:30px;
+  border-radius:50%;background:var(--soft);color:var(--accent);font-weight:700;
+  display:grid;place-items:center}
+.steps strong{display:block}
+ul.list{padding-left:20px;margin:12px 0 0}
+ul.list li{margin:6px 0}
+.note{background:var(--soft);border-radius:14px;padding:16px 18px;color:var(--fg)}
+form{display:grid;gap:12px;margin-top:16px}
+label{font-weight:600}
+input[type=email]{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);
+  background:var(--card);color:var(--fg);font-size:1rem}
+input[type=email]:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hp{position:absolute;left:-9999px;height:0;overflow:hidden}
+.small{font-size:.9rem;color:var(--muted)}
+#msg{min-height:1.5em;font-weight:600}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0}
+summary{cursor:pointer;font-weight:600}
+details p{margin:10px 0 2px}
+footer{padding:32px 0 56px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="#">Por fin la R</a></div></header>
+
+<main>
+<div class="wrap">
+
+<div class="hero">
+  <h1>Yo aprendí la R múltiple a los 42 años. Vos también podés practicarla.</h1>
+  <p class="lead">Armé un método paso a paso para adultos que nunca pudieron decir la «rr». Una práctica corta por día, guiada en Telegram y gratis.</p>
+  <div class="row">
+    <a class="btn" href="https://t.me/porfinlar_bot">Empezar en Telegram</a>
+    <a class="btn ghost" href="#avisos">Dejar mi email</a>
+  </div>
+  <p class="small">Necesitás la app de Telegram. No hace falta registrarse en nada más.</p>
+</div>
+
+<section>
+  <h2>De dónde sale este método</h2>
+  <p>Pasé toda una vida sin poder pronunciar la R múltiple, hasta que a los 42 años lo logré. Cuando busqué ayuda, casi todo lo que existía estaba pensado para chicos. Por eso reconstruí el camino que me funcionó a mí y lo convertí en una práctica diaria que podés seguir a tu ritmo.</p>
+  <p class="small">Es mi experiencia personal, no un tratamiento clínico ni una garantía de resultados.</p>
+</section>
+
+<section>
+  <h2>Cómo funciona</h2>
+  <ol class="steps">
+    <li><strong>Hacés un test de dos preguntas.</strong>Te asigna un punto de partida según cómo te sale hoy el sonido.</li>
+    <li><strong>Practicás lo que toca hoy.</strong>Cada sesión tiene un objetivo claro, teoría breve y una indicación distinta.</li>
+    <li><strong>Marcás cómo te fue.</strong>El bot lleva la cuenta, te propone volver a pasos anteriores si hace falta y te muestra tu progreso.</li>
+    <li><strong>Mantenés lo logrado.</strong>Cuando te sale, pasás a palabras y frases con un calendario de repaso.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Qué vas a encontrar</h2>
+  <ul class="list">
+    <li>Práctica diaria con su objetivo, sin que tengas que decidir qué hacer.</li>
+    <li>Rutas alternativas si un paso no te sale.</li>
+    <li>Registro de minutos, hitos y notas propias.</li>
+    <li>Un resumen para llevar a un fonoaudiólogo si decidís consultar.</li>
+    <li>Podés exportar o borrar todos tus datos cuando quieras.</li>
+  </ul>
+</section>
+
+<section id="avisos">
+  <h2>Enterate cuando haya novedades</h2>
+  <p>El servicio está en construcción. Dejá tu email y te escribo solo cuando haya algo nuevo: mejoras, recordatorios, material. Nada de spam.</p>
+  <form id="f" novalidate>
+    <label for="email">Tu email</label>
+    <input id="email" name="email" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
+    <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="btn" type="submit">Quiero que me avisen</button>
+    <div id="msg" role="status" aria-live="polite"></div>
+    <p class="small">Uso tu email solo para estos avisos. Podés pedirme que lo borre cuando quieras, respondiendo cualquier mensaje.</p>
+  </form>
+</section>
+
+<section id="avisos-salud">
+  <h2>Importante</h2>
+  <div class="note">
+    <p style="margin:0">Yo no soy fonoaudiólogo. Por fin la R es una práctica guiada de autoayuda y <strong>no reemplaza a un profesional</strong>. No prometo resultados ni plazos. Si pasan varias semanas sin avances, o si tenés dificultades al tragar, al respirar o con la movilidad de la lengua, consultá con un fonoaudiólogo. El bot te avisa cuándo conviene hacerlo.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Preguntas frecuentes</h2>
+  <details><summary>¿De verdad se puede aprender de adulto?</summary>
+    <p>Yo lo logré a los 42. Además, leí consultas públicas donde fonoaudiólogos coinciden en que se puede trabajar a cualquier edad, aunque en adultos puede ser más lento. No hay garantías: cada persona es distinta.</p></details>
+  <details><summary>¿Cuánto cuesta?</summary>
+    <p>Hoy es gratis.</p></details>
+  <details><summary>¿Cuánto tiempo por día necesito?</summary>
+    <p>Las sesiones son cortas. Lo que más importa es la constancia, y el bot te ayuda a llevarla.</p></details>
+  <details><summary>¿Qué pasa con mis datos?</summary>
+    <p>El bot guarda lo mínimo para llevar tu progreso, asociado a tu usuario de Telegram. Podés exportarlo o borrarlo por completo desde el propio bot.</p></details>
+  <details><summary>¿Tengo que mostrarme o hablar con alguien?</summary>
+    <p>No. Es una práctica individual y privada. Si querés, hay un grupo de comunidad opcional.</p></details>
+</section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Por fin la R · Un proyecto independiente, hecho por mí. Contenido informativo, no clínico.</p>
+    <p><a href="https://t.me/porfinlar_bot">@porfinlar_bot</a></p>
+  </div>
+</footer>
+
+<script>
+// Para activar la recolección de emails: creá un formulario en Formspree (formspree.io)
+// y pegá acá su URL, con el formato https://formspree.io/f/xxxxxxxx
+const FORM_ENDPOINT = "";
+
+const f = document.getElementById("f");
+const msg = document.getElementById("msg");
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = f.email.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.textContent = "Revisá el email, parece incompleto.";
+    return;
+  }
+  if (f._gotcha.value) return; // trampa para bots
+  if (!FORM_ENDPOINT) {
+    msg.textContent = "El formulario todavía no está activado. Probá más tarde.";
+    return;
+  }
+  msg.textContent = "Enviando…";
+  try {
+    const r = await fetch(FORM_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({ email, origen: "landing" })
+    });
+    if (!r.ok) throw new Error();
+    f.reset();
+    msg.textContent = "¡Listo! Te avisamos cuando haya novedades.";
+  } catch {
+    msg.textContent = "No pudimos guardarlo. Probá de nuevo en un rato.";
+  }
+});
+</script>
+</body>
+</html>

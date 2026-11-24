@@ -1,4 +1,4 @@
-# Método Erre con Erre: v1.3
+# Método Por fin la R: v1.3
 
 Estado: propuesta para revisar. Fecha: 2026-11-23. Reemplaza la parte de método de `camino-de-lecciones.md` (v0.3).
 
