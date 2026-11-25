@@ -8,149 +8,256 @@
 <meta property="og:title" content="Por fin la R — Practicá la R múltiple, a cualquier edad">
 <meta property="og:description" content="Práctica diaria guiada para adultos que no pueden pronunciar la R múltiple. Gratis, en Telegram.">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#1f4d3a">
+<meta name="theme-color" content="#0e1f1a">
 <style>
 :root{
-  --bg:#faf8f4; --fg:#1d2420; --muted:#5b655f; --card:#ffffff; --line:#e4e0d6;
-  --accent:#1f4d3a; --accent-fg:#ffffff; --soft:#e9f1ec;
-}
-@media (prefers-color-scheme: dark){
-  :root{ --bg:#141a17; --fg:#eef1ee; --muted:#a3ada7; --card:#1c2420; --line:#2b352f;
-    --accent:#6fcf9f; --accent-fg:#0d1a13; --soft:#1f2b25; }
+  --bg:#f8f7f3; --paper:#ffffff; --ink:#0e1f1a; --muted:#56635e; --line:#e3e1d9;
+  --accent:#0f6b54; --accent-d:#0b5441; --tint:#e7f0ec; --dark:#0e1f1a; --on-dark:#eef3f0; --soft:#a8c9bd;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);
-  font:17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.wrap{max-width:720px;margin:0 auto;padding:0 20px}
-header{padding:20px 0}
-.brand{font-weight:700;letter-spacing:.02em;color:var(--accent);text-decoration:none}
-.hero{padding:48px 0 32px}
-h1{font-size:clamp(2rem,6vw,3rem);line-height:1.15;margin:0 0 16px}
-h2{font-size:1.5rem;margin:0 0 12px}
-.lead{font-size:1.2rem;color:var(--muted);margin:0 0 28px}
-.btn{display:inline-block;background:var(--accent);color:var(--accent-fg);
-  padding:14px 24px;border-radius:12px;font-weight:600;text-decoration:none;border:0;
-  font-size:1rem;cursor:pointer}
-.btn:hover{filter:brightness(1.08)}
-.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
-.row{display:flex;gap:12px;flex-wrap:wrap}
-section{padding:36px 0;border-top:1px solid var(--line)}
-.steps{display:grid;gap:14px;padding:0;margin:20px 0 0;list-style:none;counter-reset:s}
-.steps li{background:var(--card);border:1px solid var(--line);border-radius:14px;
-  padding:16px 18px 16px 58px;position:relative;counter-increment:s}
-.steps li::before{content:counter(s);position:absolute;left:16px;top:14px;width:30px;height:30px;
-  border-radius:50%;background:var(--soft);color:var(--accent);font-weight:700;
-  display:grid;place-items:center}
-.steps strong{display:block}
-ul.list{padding-left:20px;margin:12px 0 0}
-ul.list li{margin:6px 0}
-.note{background:var(--soft);border-radius:14px;padding:16px 18px;color:var(--fg)}
-form{display:grid;gap:12px;margin-top:16px}
-label{font-weight:600}
-input[type=email]{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);
-  background:var(--card);color:var(--fg);font-size:1rem}
-input[type=email]:focus-visible,.btn:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.7 var(--font);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+a{color:inherit}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.025em;line-height:1.08}
+h2{font-size:clamp(1.9rem,4.2vw,2.8rem);margin-bottom:20px}
+.label{display:block;font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+p{margin:0 0 16px}
+
+.btn{display:inline-block;background:var(--accent);color:#fff;padding:16px 28px;border-radius:10px;font-weight:600;
+  font-size:1.02rem;text-decoration:none;border:0;cursor:pointer;transition:background .15s}
+.btn:hover{background:var(--accent-d)}
+.btn.sm{padding:10px 18px;font-size:.92rem}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+/* Nav */
+header{position:sticky;top:0;z-index:10;background:rgba(248,247,243,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;justify-content:space-between;align-items:center;height:66px}
+.brand{font-weight:800;font-size:1.15rem;text-decoration:none;letter-spacing:-.02em}
+.brand b{color:var(--accent)}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;padding:104px 0 112px}
+.hero::after{content:"rr";position:absolute;right:-1.5%;bottom:-.24em;font-size:clamp(18rem,44vw,36rem);font-weight:800;
+  letter-spacing:-.06em;line-height:1;color:var(--tint);pointer-events:none;user-select:none;z-index:0}
+.hero .wrap{position:relative;z-index:1}
+h1{font-size:clamp(2.7rem,7.2vw,5.4rem);max-width:13em;margin-bottom:28px;letter-spacing:-.035em}
+h1 em{font-style:normal;color:var(--accent)}
+.lead{font-size:clamp(1.15rem,2.2vw,1.4rem);color:var(--muted);max-width:30em;margin-bottom:38px}
+.cta{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center}
+.alt{font-weight:600;text-underline-offset:5px;text-decoration-thickness:2px;text-decoration-color:var(--soft)}
+.alt:hover{text-decoration-color:var(--accent)}
+.micro{margin:22px 0 0;font-size:.95rem;color:var(--muted)}
+
+/* Historia (bloque oscuro) */
+.story{background:var(--dark);color:var(--on-dark);padding:112px 0}
+.story .label{color:var(--soft)}
+.story-grid{display:grid;gap:40px}
+@media(min-width:880px){.story-grid{grid-template-columns:1fr 1.25fr;gap:72px}}
+.story h2{color:#fff;margin:0}
+.story p{font-size:clamp(1.15rem,2.2vw,1.35rem);line-height:1.65;color:#d6e3dd}
+.story p:first-child{color:#fff;font-size:clamp(1.3rem,2.8vw,1.8rem);line-height:1.4;font-weight:600;letter-spacing:-.01em}
+
+/* Bloques */
+.block{padding:112px 0}
+.head{max-width:640px;margin-bottom:56px}
+.head h2{margin:0}
+
+/* Pasos */
+.steps{display:grid;gap:0;padding:0;margin:0;list-style:none;counter-reset:s;border-top:1px solid var(--ink)}
+@media(min-width:880px){.steps{grid-template-columns:repeat(4,1fr)}}
+.steps li{counter-increment:s;padding:28px 28px 32px 0;border-bottom:1px solid var(--line)}
+@media(min-width:880px){.steps li{border-bottom:0;border-right:1px solid var(--line);padding:32px 28px 8px 28px}
+  .steps li:first-child{padding-left:0}.steps li:last-child{border-right:0}}
+.steps li::before{content:counter(s,decimal-leading-zero);display:block;font-size:2.6rem;font-weight:800;letter-spacing:-.04em;
+  color:var(--accent);margin-bottom:18px;line-height:1}
+.steps strong{display:block;font-size:1.2rem;line-height:1.25;margin-bottom:10px;letter-spacing:-.01em}
+.steps span{display:block;color:var(--muted);font-size:1rem;line-height:1.6}
+
+/* Qué vas a encontrar */
+.find{background:var(--tint)}
+.find-grid{display:grid;gap:40px}
+@media(min-width:880px){.find-grid{grid-template-columns:1fr 1.2fr;gap:72px;align-items:start}}
+.find .head{margin:0}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.checks li{display:flex;gap:18px;padding:22px 0;border-top:1px solid rgba(14,31,26,.18);font-size:1.12rem;font-weight:500;line-height:1.5}
+.checks li:last-child{border-bottom:1px solid rgba(14,31,26,.18)}
+.checks svg{flex:none;width:26px;height:26px;margin-top:1px;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+/* Email */
+.mail{text-align:center;max-width:680px;margin:0 auto}
+.mail h2{margin-bottom:16px}
+.mail p.sub{color:var(--muted)}
+form{display:grid;gap:14px;margin:34px auto 0;max-width:460px;text-align:left}
+label{font-weight:600;font-size:.95rem}
+input[type=email]{width:100%;padding:16px 18px;border-radius:10px;border:1.5px solid #b9b7ac;background:#fff;color:var(--ink);font:inherit;font-size:1.02rem}
+input[type=email]:focus{border-color:var(--accent)}
 .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
-.small{font-size:.9rem;color:var(--muted)}
-#msg{min-height:1.5em;font-weight:600}
-details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:10px 0}
-summary{cursor:pointer;font-weight:600}
-details p{margin:10px 0 2px}
-footer{padding:32px 0 56px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line)}
-a{color:var(--accent)}
+.small{font-size:.88rem;color:var(--muted);line-height:1.55}
+#msg{min-height:1.4em;font-weight:600;color:var(--accent)}
+form .btn{width:100%;text-align:center}
+
+/* FAQ */
+.faq-wrap{background:var(--paper);border-block:1px solid var(--line)}
+.faq{max-width:800px}
+details{border-top:1px solid var(--line)}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;font-weight:600;font-size:1.15rem;padding:24px 48px 24px 0;list-style:none;position:relative;letter-spacing:-.01em}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";position:absolute;right:6px;top:50%;width:11px;height:11px;border-right:2.5px solid var(--accent);
+  border-bottom:2.5px solid var(--accent);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+details[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+details p{margin:0;padding:0 48px 26px 0;color:var(--muted)}
+
+/* Importante */
+.important{padding:72px 0}
+.note{max-width:800px;margin:0 auto;border-left:4px solid var(--accent);padding:6px 0 6px 28px}
+.note h2{font-size:1.5rem;margin-bottom:10px;letter-spacing:-.015em}
+.note p{margin:0;color:var(--muted)}
+.note strong{color:var(--ink)}
+
+/* Footer */
+footer{background:var(--dark);color:#b8cac2;padding:44px 0;font-size:.95rem}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px}
+footer p{margin:0}
+footer a{color:#fff;font-weight:600;text-underline-offset:4px}
+
+@media(max-width:640px){
+  body{font-size:17px}
+  .hero{padding:64px 0 72px}
+  .hero::after{font-size:15rem;right:-8%}
+  .story,.block{padding:76px 0}
+  .head{margin-bottom:36px}
+  .brand{font-size:1.05rem}
+  .btn.sm{padding:9px 14px;font-size:.84rem}
+  .cta .btn{width:100%;text-align:center}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,summary::after{transition:none}}
 </style>
 </head>
 <body>
-<header><div class="wrap"><a class="brand" href="#">Por fin la R</a></div></header>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#">Por fin la <b>R</b></a>
+    <a class="btn sm" href="https://t.me/porfinlar_bot">Empezar en Telegram</a>
+  </div>
+</header>
 
 <main>
-<div class="wrap">
 
-<div class="hero">
-  <h1>Yo aprendí la R múltiple a los 42 años. Vos también podés practicarla.</h1>
-  <p class="lead">Armé un método paso a paso para adultos que nunca pudieron decir la «rr». Una práctica corta por día, guiada en Telegram y gratis.</p>
-  <div class="row">
-    <a class="btn" href="https://t.me/porfinlar_bot">Empezar en Telegram</a>
-    <a class="btn ghost" href="#avisos">Dejar mi email</a>
-  </div>
-  <p class="small">Necesitás la app de Telegram. No hace falta registrarse en nada más.</p>
-</div>
-
-<section>
-  <h2>De dónde sale este método</h2>
-  <p>Pasé toda una vida sin poder pronunciar la R múltiple, hasta que a los 42 años lo logré. Cuando busqué ayuda, casi todo lo que existía estaba pensado para chicos. Por eso reconstruí el camino que me funcionó a mí y lo convertí en una práctica diaria que podés seguir a tu ritmo.</p>
-  <p class="small">Es mi experiencia personal, no un tratamiento clínico ni una garantía de resultados.</p>
-</section>
-
-<section>
-  <h2>Cómo funciona</h2>
-  <ol class="steps">
-    <li><strong>Hacés un test de dos preguntas.</strong>Te asigna un punto de partida según cómo te sale hoy el sonido.</li>
-    <li><strong>Practicás lo que toca hoy.</strong>Cada sesión tiene un objetivo claro, teoría breve y una indicación distinta.</li>
-    <li><strong>Marcás cómo te fue.</strong>El bot lleva la cuenta, te propone volver a pasos anteriores si hace falta y te muestra tu progreso.</li>
-    <li><strong>Mantenés lo logrado.</strong>Cuando te sale, pasás a palabras y frases con un calendario de repaso.</li>
-  </ol>
-</section>
-
-<section>
-  <h2>Qué vas a encontrar</h2>
-  <ul class="list">
-    <li>Práctica diaria con su objetivo, sin que tengas que decidir qué hacer.</li>
-    <li>Rutas alternativas si un paso no te sale.</li>
-    <li>Registro de minutos, hitos y notas propias.</li>
-    <li>Un resumen para llevar a un fonoaudiólogo si decidís consultar.</li>
-    <li>Podés exportar o borrar todos tus datos cuando quieras.</li>
-  </ul>
-</section>
-
-<section id="avisos">
-  <h2>Enterate cuando haya novedades</h2>
-  <p>El servicio está en construcción. Dejá tu email y te escribo solo cuando haya algo nuevo: mejoras, recordatorios, material. Nada de spam.</p>
-  <form id="f" novalidate>
-    <label for="email">Tu email</label>
-    <input id="email" name="email" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
-    <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <button class="btn" type="submit">Quiero que me avisen</button>
-    <div id="msg" role="status" aria-live="polite"></div>
-    <p class="small">Uso tu email solo para estos avisos. Podés pedirme que lo borre cuando quieras, respondiendo cualquier mensaje.</p>
-  </form>
-</section>
-
-<section id="avisos-salud">
-  <h2>Importante</h2>
-  <div class="note">
-    <p style="margin:0">Yo no soy fonoaudiólogo. Por fin la R es una práctica guiada de autoayuda y <strong>no reemplaza a un profesional</strong>. No prometo resultados ni plazos. Si pasan varias semanas sin avances, o si tenés dificultades al tragar, al respirar o con la movilidad de la lengua, consultá con un fonoaudiólogo. El bot te avisa cuándo conviene hacerlo.</p>
+<section class="hero">
+  <div class="wrap">
+    <h1>Aprendí la <em>«rr»</em> a los 42 años. Vos también podés aprenderlo.</h1>
+    <p class="lead">Te cuento los pasos que seguí para lograrlo. La clave: una práctica corta por día, pero todos los días, guiada en Telegram, gratis y sin garantía de resultados.</p>
+    <div class="cta">
+      <a class="btn" href="https://t.me/porfinlar_bot">Empezar en Telegram</a>
+    </div>
+    <p class="micro">Abrís @porfinlar_bot y empezás. No hace falta registrarse en nada más.</p>
+    <p class="micro" style="margin-top:10px"><a class="alt" href="#guia">Prefiero recibir la guía por email</a></p>
   </div>
 </section>
 
-<section>
-  <h2>Preguntas frecuentes</h2>
-  <details><summary>¿De verdad se puede aprender de adulto?</summary>
-    <p>Yo lo logré a los 42. Además, leí consultas públicas donde fonoaudiólogos coinciden en que se puede trabajar a cualquier edad, aunque en adultos puede ser más lento. No hay garantías: cada persona es distinta.</p></details>
-  <details><summary>¿Cuánto cuesta?</summary>
-    <p>Hoy es gratis.</p></details>
-  <details><summary>¿Cuánto tiempo por día necesito?</summary>
-    <p>Las sesiones son cortas. Lo que más importa es la constancia, y el bot te ayuda a llevarla.</p></details>
-  <details><summary>¿Qué pasa con mis datos?</summary>
-    <p>El bot guarda lo mínimo para llevar tu progreso, asociado a tu usuario de Telegram. Podés exportarlo o borrarlo por completo desde el propio bot.</p></details>
-  <details><summary>¿Tengo que mostrarme o hablar con alguien?</summary>
-    <p>No. Es una práctica individual y privada. Si querés, hay un grupo de comunidad opcional.</p></details>
+<section class="story">
+  <div class="wrap story-grid">
+    <div>
+      <span class="label">Mi historia</span>
+      <h2>De dónde sale mi método</h2>
+    </div>
+    <div>
+      <p>Pasé toda una vida sin poder pronunciar la «rr», hasta que a los 42 años lo logré.</p>
+      <p>Cuando busqué ayuda, casi todo lo que existía estaba pensado para chicos.</p>
+      <p>Por eso reconstruí el camino que me funcionó a mí y lo convertí en una práctica diaria que podés seguir a tu ritmo, sin garantía de resultados.</p>
+    </div>
+  </div>
 </section>
 
-</div>
+<section class="block">
+  <div class="wrap">
+    <div class="head">
+      <span class="label">En cuatro pasos</span>
+      <h2>Cómo funciona</h2>
+    </div>
+    <ol class="steps">
+      <li><strong>Hacés un test de dos preguntas.</strong><span>Te asigna un punto de partida según cómo te sale hoy el sonido.</span></li>
+      <li><strong>Hacés el ejercicio del día.</strong><span>Cada sesión tiene un objetivo claro, teoría breve y una indicación distinta.</span></li>
+      <li><strong>Marcás cómo te fue.</strong><span>El bot lleva la cuenta, te propone volver a pasos anteriores si hace falta y te muestra tu progreso.</span></li>
+      <li><strong>Mantenés lo logrado.</strong><span>Cuando te sale, pasás a palabras y frases con un calendario de repaso.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="block find">
+  <div class="wrap find-grid">
+    <div class="head">
+      <span class="label">Todo adentro del bot</span>
+      <h2>Qué vas a encontrar</h2>
+    </div>
+    <ul class="checks">
+      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Práctica diaria con su objetivo, sin que tengas que decidir qué hacer.</li>
+      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Rutas alternativas si un paso no te sale.</li>
+      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Registro de minutos, hitos y notas propias.</li>
+      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Un resumen para llevar a un fonoaudiólogo si decidís consultar.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="block" id="guia">
+  <div class="wrap">
+    <div class="mail">
+      <h2>Recibí la guía de inicio por email</h2>
+      <p class="sub">Si preferís leer primero cómo encarar la práctica antes de entrar a Telegram, dejá tu correo y te mando la guía inicial con el acceso a @porfinlar_bot.</p>
+      <form id="f" novalidate>
+        <label for="email">Tu email</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
+        <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="btn" type="submit">Enviar guía</button>
+        <div id="msg" role="status" aria-live="polite"></div>
+        <p class="small" style="margin:0">Solo envío la guía y avisos puntuales cuando sume mejoras. Podés pedir que borre tu email cuando quieras.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="block faq-wrap">
+  <div class="wrap">
+    <div class="head"><h2>Preguntas frecuentes</h2></div>
+    <div class="faq">
+      <details><summary>¿De verdad se puede aprender de adulto?</summary>
+        <p>Es posible entrenar la articulación y el control motor en la adultez con práctica constante y adaptada, aunque cada persona tiene sus tiempos y este método no tiene garantía ni plazos fijos.</p></details>
+      <details><summary>¿Cuánto cuesta?</summary>
+        <p>Es gratis. La práctica guiada en Telegram no tiene costo.</p></details>
+      <details><summary>¿Cuánto tiempo por día necesito?</summary>
+        <p>Está pensado para sesiones cortas diarias que podés hacer a tu ritmo, sin depender de agendas fijas.</p></details>
+      <details><summary>¿Qué pasa con mis datos?</summary>
+        <p>Podés exportar o borrar todos tus datos cuando quieras, y tu email se usa solo para lo que pediste.</p></details>
+      <details><summary>¿Tengo que mostrarme o hablar con alguien?</summary>
+        <p>No. Practicás a tu ritmo de forma guiada en el bot, sin exposiciones obligatorias.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="important" id="importante">
+  <div class="wrap">
+    <div class="note">
+      <h2>Importante</h2>
+      <p>Yo no soy fonoaudiólogo. Por fin la R es una práctica guiada de autoayuda y <strong>no reemplaza a un profesional</strong>. No tiene garantía de resultados ni plazos. Si pasan varias semanas sin avances, o si tenés dificultades al tragar, al respirar o con la movilidad de la lengua, consultá con un fonoaudiólogo.</p>
+    </div>
+  </div>
+</section>
+
 </main>
 
 <footer>
   <div class="wrap">
-    <p>Por fin la R · Un proyecto independiente, hecho por mí. Contenido informativo, no clínico.</p>
+    <p>Por fin la R · Un proyecto independiente, hecho por mí.</p>
     <p><a href="https://t.me/porfinlar_bot">@porfinlar_bot</a></p>
   </div>
 </footer>
 
 <script>
-// Para activar la recolección de emails: creá un formulario en Formspree (formspree.io)
-// y pegá acá su URL, con el formato https://formspree.io/f/xxxxxxxx
+// Endpoint de Formspree que recibe los emails
 const FORM_ENDPOINT = "https://formspree.io/f/mzerkovo";
 
 const f = document.getElementById("f");
@@ -172,11 +279,11 @@ f.addEventListener("submit", async (e) => {
     const r = await fetch(FORM_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ email, origen: "landing" })
+      body: JSON.stringify({ email, origen: "guia" })
     });
     if (!r.ok) throw new Error();
     f.reset();
-    msg.textContent = "¡Listo! Te avisamos cuando haya novedades.";
+    msg.textContent = "¡Listo! Anoté tu email.";
   } catch {
     msg.textContent = "No pudimos guardarlo. Probá de nuevo en un rato.";
   }
