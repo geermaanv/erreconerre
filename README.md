@@ -1,4 +1,4 @@
-# Por fin la R
+# Me salió la R
 
 Método y bot de Telegram para que adultos practiquen la R múltiple (rr), paso a paso y con una práctica corta por día.
 
