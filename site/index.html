@@ -172,7 +172,7 @@ footer a{color:#fff;font-weight:600;text-underline-offset:4px}
       <a class="btn" href="https://t.me/porfinlar_bot">Empezar en Telegram</a>
     </div>
     <p class="micro">Abrís @porfinlar_bot y empezás. No hace falta registrarse en nada más.</p>
-    <p class="micro" style="margin-top:10px"><a class="alt" href="#guia">Prefiero recibir la guía por email</a></p>
+    <p class="micro" style="margin-top:10px"><a class="alt" href="#guia">Quiero el curso de 7 días por email</a></p>
   </div>
 </section>
 
@@ -183,7 +183,7 @@ footer a{color:#fff;font-weight:600;text-underline-offset:4px}
       <h2>De dónde sale mi método</h2>
     </div>
     <div>
-      <p>Pasé toda una vida sin poder pronunciar la «rr», hasta que a los 42 años lo logré.</p>
+      <p>Soy Germán. Pasé toda una vida sin poder pronunciar la «rr», hasta que a los 42 años lo logré.</p>
       <p>Cuando busqué ayuda, casi todo lo que existía estaba pensado para chicos.</p>
       <p>Por eso reconstruí el camino que me funcionó a mí y lo convertí en una práctica diaria que podés seguir a tu ritmo. A mí me sirvió, pero eso no garantiza que te sirva a vos. Probarlo es una decisión tuya.</p>
     </div>
@@ -275,15 +275,15 @@ Habla: escalón 1 de 5<span class="tgtime">23:12</span></div>
 <section class="block" id="guia">
   <div class="wrap">
     <div class="mail">
-      <h2>Recibí la guía de inicio por email</h2>
-      <p class="sub">Si preferís leer primero cómo encarar la práctica antes de entrar a Telegram, dejá tu correo y te mando la guía inicial con el acceso a @porfinlar_bot.</p>
+      <h2>Curso de 7 días por email</h2>
+      <p class="sub">Estoy preparando un curso de 7 días por email: un mail por día, con una sola indicación para practicar y cómo seguir en @porfinlar_bot. Dejá tu correo y te aviso apenas arranque. ¿Preferís leer ya? Mirá la <a href="guia/">guía de inicio</a>.</p>
       <form id="f" novalidate>
         <label for="email">Tu email</label>
         <input id="email" name="email" type="email" autocomplete="email" placeholder="nombre@correo.com" required>
         <input class="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
-        <button class="btn" type="submit">Enviar guía</button>
+        <button class="btn" type="submit">Avisame cuando arranque</button>
         <div id="msg" role="status" aria-live="polite"></div>
-        <p class="small" style="margin:0">Solo envío la guía y avisos puntuales cuando sume mejoras. Podés pedir que borre tu email cuando quieras.</p>
+        <p class="small" style="margin:0">Te escribo cuando el curso esté listo, y después solo avisos puntuales cuando sume mejoras. Podés pedir que borre tu email cuando quieras, escribiéndome a <a class="mail" data-u="germanv" data-d="gmail.com" href="#">germanv (arroba) gmail.com</a>.</p>
       </form>
     </div>
   </div>
@@ -311,7 +311,7 @@ Habla: escalón 1 de 5<span class="tgtime">23:12</span></div>
   <div class="wrap">
     <div class="note">
       <h2>Importante</h2>
-      <p>Yo no soy fonoaudiólogo. Por fin la R es una práctica guiada de autoayuda y <strong>no reemplaza a un profesional</strong>. Que a mí me haya servido no es una garantía de que te sirva a vos: no hay resultados asegurados ni plazos, y probar este método es una decisión personal. Si pasan varias semanas sin avances, o si tenés dificultades al tragar, al respirar o con la movilidad de la lengua, consultá con un fonoaudiólogo.</p>
+      <p>Soy Germán y no soy fonoaudiólogo. Por fin la R es una práctica guiada de autoayuda y <strong>no reemplaza a un profesional</strong>. Que a mí me haya servido no es una garantía de que te sirva a vos: no hay resultados asegurados ni plazos, y probar este método es una decisión personal. Si pasan varias semanas sin avances, o si tenés dificultades al tragar, al respirar o con la movilidad de la lengua, consultá con un fonoaudiólogo.</p>
     </div>
   </div>
 </section>
@@ -320,14 +320,22 @@ Habla: escalón 1 de 5<span class="tgtime">23:12</span></div>
 
 <footer>
   <div class="wrap">
-    <p>Por fin la R · Un proyecto independiente, hecho por mí.</p>
-    <p><a href="https://t.me/porfinlar_bot">@porfinlar_bot</a></p>
+    <p>Por fin la R · Un proyecto independiente, hecho por Germán.</p>
+    <p>Escribime: <a class="mail" data-u="germanv" data-d="gmail.com" href="#">germanv (arroba) gmail.com</a></p>
+    <p><a href="guia/">Guía de inicio</a> · <a href="https://t.me/porfinlar_bot">@porfinlar_bot</a></p>
   </div>
 </footer>
 
 <script>
 // Endpoint de Formspree que recibe los emails
 const FORM_ENDPOINT = "https://formspree.io/f/mzerkovo";
+
+// Muestra el email personal armándolo en el navegador, para que los robots que recorren páginas no lo junten.
+document.querySelectorAll("a.mail").forEach((a) => {
+  const addr = a.dataset.u + "@" + a.dataset.d;
+  a.href = "mailto:" + addr;
+  a.textContent = addr;
+});
 
 const f = document.getElementById("f");
 const msg = document.getElementById("msg");
@@ -348,11 +356,11 @@ f.addEventListener("submit", async (e) => {
     const r = await fetch(FORM_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ email, origen: "guia" })
+      body: JSON.stringify({ email, origen: "curso7-espera" })
     });
     if (!r.ok) throw new Error();
     f.reset();
-    msg.textContent = "¡Listo! Anoté tu email.";
+    msg.innerHTML = '¡Listo! Anoté tu email y te aviso cuando arranque el curso. Mientras tanto, podés leer la <a href="guia/">guía de inicio</a>.';
   } catch {
     msg.textContent = "No pudimos guardarlo. Probá de nuevo en un rato.";
   }
