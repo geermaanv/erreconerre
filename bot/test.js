@@ -20,7 +20,7 @@ const body = () => last.text.split('\n\n').slice(1).join('\n\n');
 const maxCb = () => Math.max(...callbacks().filter(Boolean).map((d) => Buffer.byteLength(d)));
 
 (async () => {
-  await msg('/start'); assert(/entrenamiento para la R múltiple/.test(last.text) && /Cómo funciona/.test(labels().join()));
+  await msg('/start'); assert(/armé este entrenamiento/.test(last.text) && /Cómo funciona/.test(labels().join()));
   // introducción de 5 pantallas
   await tap('in:0'); assert(/1\/5/.test(last.text));
   for (let i = 1; i < 5; i++) await tap(`in:${i}`);
@@ -132,6 +132,13 @@ const maxCb = () => Math.max(...callbacks().filter(Boolean).map((d) => Buffer.by
 
   // Grupos: se ignoran
   last = null; await handle({ message: { chat: { id: 7, type: 'group' }, text: '/start' } }, api); assert.strictEqual(last, null);
+
+  // Origen de la visita: solo etiquetas simples, la primera vez
+  const startAs = (id, text) => handle({ message: { chat: { id, type: 'private' }, text } }, api);
+  await startAs(901, '/start dia1'); assert.strictEqual(store.get(901).source, 'dia1');
+  await startAs(901, '/start otra'); assert.strictEqual(store.get(901).source, 'dia1', 'no se pisa el origen');
+  await startAs(902, '/start'); assert.strictEqual(store.get(902).source, 'directo');
+  await startAs(903, '/start <script>'); assert.strictEqual(store.get(903).source, 'directo');
 
   console.log('OK: flujo completo');
   require('fs').rmSync(process.env.BOT_DATA, { force: true });

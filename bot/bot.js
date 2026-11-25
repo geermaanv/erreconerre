@@ -34,7 +34,7 @@ const dots = (n, max) => '●'.repeat(Math.min(n, max)) + '○'.repeat(Math.max(
 
 // ---------- pantallas ----------
 const welcome = () => ({
-  text: 'Hola. Esto es un entrenamiento para la R múltiple (la de "perro"), pensado para adultos.\n\nSe basa en un método simple: separar la doble R para que no te trabes, y practicar mucho, en ratos cortos.\n\nTe recomiendo leer "Cómo funciona" antes de empezar. Son cinco pantallas cortas.',
+  text: 'Hola, soy Germán. Aprendí la R múltiple (la de "perro") a los 42 años y armé este entrenamiento para adultos.\n\nSe basa en un método simple: separar la doble R para que no te trabes, y practicar mucho, en ratos cortos.\n\nTe recomiendo leer "Cómo funciona" antes de empezar. Son cinco pantallas cortas.',
   kb: [[B('Cómo funciona', 'in:0')], [B('Empezar ya', 'ts')]],
 });
 function intro(i) {
@@ -367,7 +367,12 @@ function route(u, data, ctx) {
 
 function onText(u, text, ctx) {
   const t = text.trim(), cmd = t.split(/[ @]/)[0];
-  if (cmd === '/start') { u.awaiting = null; return u.testDone ? menu(u) : welcome(); }
+  if (cmd === '/start') {
+    u.awaiting = null;
+    // Origen de la visita (ej. t.me/porfinlar_bot?start=dia1). Solo se guarda la etiqueta, la primera vez.
+    if (!u.joined) { u.joined = L.dayKey(); const p = (t.split(/\s+/)[1] || '').toLowerCase(); u.source = /^[a-z0-9_-]{1,32}$/.test(p) ? p : 'directo'; }
+    return u.testDone ? menu(u) : welcome();
+  }
   if (cmd === '/menu') { u.awaiting = null; return menu(u); }
   if (cmd === '/ayuda') return intro(0);
   if (cmd === '/borrar') return route(u, 'dl', ctx);
