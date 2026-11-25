@@ -29,7 +29,8 @@ const realApi = {
 
 const B = (t, d) => ({ t, d });
 const MENU = [B('Menú', 'm')];
-const bar = (n, max, len = 8) => '▰'.repeat(max ? Math.round((n / max) * len) : 0) + '▱'.repeat(len - (max ? Math.round((n / max) * len) : 0));
+const bar = (n, max, len = 10) => '█'.repeat(max ? Math.round((n / max) * len) : 0) + '░'.repeat(len - (max ? Math.round((n / max) * len) : 0));
+const dots = (n, max) => '●'.repeat(Math.min(n, max)) + '○'.repeat(Math.max(max - n, 0));
 
 // ---------- pantallas ----------
 const welcome = () => ({
@@ -163,9 +164,11 @@ function consultaResumen(u) {
 function progress(u) {
   const today = L.dayKey(), d7 = L.daysInLast7(u, today);
   const wk = [0, 1, 2].map((k) => L.minutesInWindow(u, today, k * 7, k * 7 + 6)), mx = Math.max(...wk, 1), h = L.hoy(u);
-  const marks = C.PRACTICES.map((p) => `${p.n} ${L.superada(u, p.n) ? '✓' : p.n === h ? '▶' : '·'}`).join('  ');
+  const mark = (p) => `${L.superada(u, p.n) ? '✅' : p.n === h ? '▶️' : '⚪'}${p.n}`;
+  const marks = [C.PRACTICES.slice(0, 5), C.PRACTICES.slice(5)].map((r) => r.map(mark).join('   ')).join('\n');
+  const wkNames = ['Esta semana', 'Semana pasada', 'Hace 2 semanas'];
   return {
-    text: `Mi progreso\n\nTotal: ${L.fmtMin(L.totalMinutes(u))}\nRacha: ${L.streak(u, today)} días\nÚltimos 7 días: ${d7} de 5 días practicados  ${bar(Math.min(d7, 5), 5, 5)}\n\nMinutos por semana (de la más reciente a la más antigua):\n${wk.map((m, k) => `  ${k === 0 ? 'esta  ' : `-${k}     `}${bar(m, mx)}  ${m}`).join('\n')}\n\nPrácticas (✓ superada: salió en 3 días distintos):\n${marks}\n\nHabla: escalón ${u.fase2 + 1} de ${C.FASE2.length}`,
+    text: `Mi progreso\n\n⏱ Total: ${L.fmtMin(L.totalMinutes(u))}\n🔥 Racha: ${L.streak(u, today)} días\n📅 Últimos 7 días: ${d7} de 5 practicados\n${dots(d7, 5)}\n\nMinutos por semana\n${wk.map((m, k) => `${wkNames[k]}\n${bar(m, mx)}  ${m} min`).join('\n')}\n\nPrácticas\n${marks}\n✅ superada: salió en 3 días distintos\n\nHabla: escalón ${u.fase2 + 1} de ${C.FASE2.length}`,
     kb: [[B('Mis hitos', 'hi'), B('Notas', 'nt')], MENU],
   };
 }
