@@ -86,13 +86,12 @@ h1 em{font-style:normal;color:var(--accent)}
 .checks svg{flex:none;width:26px;height:26px;margin-top:1px;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 
 /* Capturas del bot */
-.shots{display:grid;gap:44px 36px;margin-top:56px}
+.shots{display:grid;gap:44px 36px;margin-top:56px;align-items:start}
 @media(min-width:760px){.shots{grid-template-columns:1fr 1fr}}
 .shot{margin:0}
 @media(min-width:760px){.shot:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - 18px)}}
-.frame{height:500px;background:#a3bf94;border-radius:22px;display:flex;align-items:center;justify-content:center;
-  padding:18px;overflow:hidden;box-shadow:0 22px 40px -26px rgba(14,31,26,.55)}
-.frame img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;border-radius:14px}
+.shotimg{display:block;width:100%;height:auto;border-radius:20px;box-shadow:0 22px 40px -26px rgba(14,31,26,.55)}
+.mockbg{background:#a3bf94;border-radius:20px;padding:22px 18px;display:flex;justify-content:center;box-shadow:0 22px 40px -26px rgba(14,31,26,.55)}
 .tgmock{width:100%;max-width:330px;font-size:.7rem;line-height:1.35;color:#000}
 .tgmock .bb{color:#2f7d5b;letter-spacing:-.04em}
 .tgbubble{background:#fff;border-radius:14px;padding:10px 12px 8px;white-space:pre-line;margin-bottom:5px;position:relative}
@@ -102,7 +101,6 @@ h1 em{font-style:normal;color:var(--accent)}
 .shot figcaption{margin-top:18px;color:var(--muted);font-size:1rem;line-height:1.55}
 .shot figcaption strong{display:block;color:var(--ink);font-size:1.15rem;margin-bottom:4px;letter-spacing:-.01em}
 .shots-note{margin:36px 0 0;text-align:center}
-@media(max-width:759px){.frame{height:auto;aspect-ratio:1/.9;padding:12px}}
 
 /* Email */
 .mail{text-align:center;max-width:680px;margin:0 auto}
@@ -218,27 +216,27 @@ footer a{color:#fff;font-weight:600;text-underline-offset:4px}
   <div class="wrap">
     <div class="shots">
       <figure class="shot">
-        <div class="frame"><img src="img/como-funciona.png" alt="Pantalla del bot que explica cómo funciona la R que vibra, con botones Siguiente y Saltar" loading="lazy"></div>
+        <img class="shotimg" src="img/como-funciona.png" alt="Pantalla del bot que explica cómo funciona la R que vibra, con botones Siguiente y Saltar" loading="lazy" width="900">
         <figcaption><strong>Primero entendés cómo funciona</strong>Cinco pantallas cortas explican qué hace la lengua en la R que vibra, antes de practicar.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="frame"><img src="img/test.png" alt="Pantalla del bot con la pregunta del test inicial y cinco botones de respuesta" loading="lazy"></div>
+        <img class="shotimg" src="img/test.png" alt="Pantalla del bot con la pregunta del test inicial y cinco botones de respuesta" loading="lazy" width="900">
         <figcaption><strong>Un test para saber por dónde empezar</strong>Una pregunta sobre cómo te sale hoy la R, sin diagnóstico y con opción de saltarla.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="frame"><img src="img/menu-hoy.png" alt="Menú del bot con la práctica de hoy, su objetivo y las nueve prácticas" loading="lazy"></div>
+        <img class="shotimg" src="img/menu-hoy.png" alt="Menú del bot con la práctica de hoy, su objetivo y las nueve prácticas" loading="lazy" width="900">
         <figcaption><strong>Cada día, una sola cosa para hacer</strong>La práctica de hoy con su objetivo, y las nueve prácticas siempre abiertas.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="frame"><img src="img/practica.png" alt="Pantalla de la práctica 1 del bot con sílabas para repetir y botones Empecé, Ver teoría, Modo memoria y Si no sale" loading="lazy"></div>
+        <img class="shotimg" src="img/practica.png" alt="Pantalla de la práctica 1 del bot con sílabas para repetir y botones Empecé, Ver teoría, Modo memoria y Si no sale" loading="lazy" width="900">
         <figcaption><strong>Una línea, varias veces, lento</strong>Cada práctica trae sus sílabas listas para repetir, con teoría y modo memoria a un toque.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="frame"><img src="img/si-no-sale.png" alt="Pantalla del bot con una ruta alternativa para conseguir el sonido, con pasos numerados y botones para pasar a la siguiente" loading="lazy"></div>
+        <img class="shotimg" src="img/si-no-sale.png" alt="Pantalla del bot con una ruta alternativa para conseguir el sonido, con pasos numerados y botones para pasar a la siguiente" loading="lazy" width="900">
         <figcaption><strong>Si un paso no sale, hay otro camino</strong>Rutas distintas al mismo sonido: probás una varios días y, si no funciona, pasás a la siguiente.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="frame"><div class="tgmock" role="img" aria-label="Recreación de la pantalla Mi progreso del bot, con datos de ejemplo: total de minutos, racha, minutos por semana y prácticas superadas">
+        <div class="mockbg"><div class="tgmock" role="img" aria-label="Recreación de la pantalla Mi progreso del bot, con datos de ejemplo: total de minutos, racha, minutos por semana y prácticas superadas">
           <div class="tgbubble">Mi progreso
 
 ⏱ Total: 3 h 20 min
@@ -266,7 +264,7 @@ Habla: escalón 1 de 5<span class="tgtime">23:12</span></div>
         <figcaption><strong>Ves cuánto practicaste</strong>Minutos, racha, prácticas superadas, hitos y notas propias.</figcaption>
       </figure>
       <figure class="shot">
-        <div class="frame"><img src="img/ajustes.png" alt="Pantalla de ajustes del bot con opciones para exportar o borrar datos y llevar un resumen a la consulta" loading="lazy"></div>
+        <img class="shotimg" src="img/ajustes.png" alt="Pantalla de ajustes del bot con opciones para exportar o borrar datos y llevar un resumen a la consulta" loading="lazy" width="900">
         <figcaption><strong>Tus datos y tu consulta, a mano</strong>Exportá o borrá tus datos cuando quieras y llevá un resumen a un fonoaudiólogo.</figcaption>
       </figure>
     </div>
