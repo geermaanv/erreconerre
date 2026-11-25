@@ -85,6 +85,25 @@ h1 em{font-style:normal;color:var(--accent)}
 .checks li:last-child{border-bottom:1px solid rgba(14,31,26,.18)}
 .checks svg{flex:none;width:26px;height:26px;margin-top:1px;stroke:var(--accent);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 
+/* Capturas del bot */
+.shots{display:grid;gap:44px 36px;margin-top:56px}
+@media(min-width:760px){.shots{grid-template-columns:1fr 1fr}}
+.shot{margin:0}
+@media(min-width:760px){.shot:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - 18px)}}
+.frame{height:500px;background:#a3bf94;border-radius:22px;display:flex;align-items:center;justify-content:center;
+  padding:18px;overflow:hidden;box-shadow:0 22px 40px -26px rgba(14,31,26,.55)}
+.frame img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;border-radius:14px}
+.tgmock{width:100%;max-width:330px;font-size:.7rem;line-height:1.35;color:#000}
+.tgmock .bb{color:#2f7d5b;letter-spacing:-.04em}
+.tgbubble{background:#fff;border-radius:14px;padding:10px 12px 8px;white-space:pre-line;margin-bottom:5px;position:relative}
+.tgtime{display:block;text-align:right;color:#8a8a8a;font-size:.62rem;margin-top:2px}
+.tgrow{display:flex;gap:5px;margin-top:5px}
+.tgrow span{flex:1;text-align:center;background:rgba(80,120,70,.62);color:#fff;border-radius:9px;padding:7px 4px;font-size:.74rem}
+.shot figcaption{margin-top:18px;color:var(--muted);font-size:1rem;line-height:1.55}
+.shot figcaption strong{display:block;color:var(--ink);font-size:1.15rem;margin-bottom:4px;letter-spacing:-.01em}
+.shots-note{margin:36px 0 0;text-align:center}
+@media(max-width:759px){.frame{height:auto;aspect-ratio:1/.9;padding:12px}}
+
 /* Email */
 .mail{text-align:center;max-width:680px;margin:0 auto}
 .mail h2{margin-bottom:16px}
@@ -189,17 +208,69 @@ footer a{color:#fff;font-weight:600;text-underline-offset:4px}
 </section>
 
 <section class="block find">
-  <div class="wrap find-grid">
-    <div class="head">
+  <div class="wrap">
+    <div class="head" style="margin-bottom:0">
       <span class="label">Todo adentro del bot</span>
       <h2>Qué vas a encontrar</h2>
+      <p style="color:var(--muted);margin:0">Así se ve por dentro. Sin cuentas, sin descargar nada más.</p>
     </div>
-    <ul class="checks">
-      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Práctica diaria con su objetivo, sin que tengas que decidir qué hacer.</li>
-      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Rutas alternativas si un paso no te sale.</li>
-      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Registro de minutos, hitos y notas propias.</li>
-      <li><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg>Un resumen para llevar a un fonoaudiólogo si decidís consultar.</li>
-    </ul>
+  </div>
+  <div class="wrap">
+    <div class="shots">
+      <figure class="shot">
+        <div class="frame"><img src="img/como-funciona.png" alt="Pantalla del bot que explica cómo funciona la R que vibra, con botones Siguiente y Saltar" loading="lazy"></div>
+        <figcaption><strong>Primero entendés cómo funciona</strong>Cinco pantallas cortas explican qué hace la lengua en la R que vibra, antes de practicar.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="frame"><img src="img/test.png" alt="Pantalla del bot con la pregunta del test inicial y cinco botones de respuesta" loading="lazy"></div>
+        <figcaption><strong>Un test para saber por dónde empezar</strong>Una pregunta sobre cómo te sale hoy la R, sin diagnóstico y con opción de saltarla.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="frame"><img src="img/menu-hoy.png" alt="Menú del bot con la práctica de hoy, su objetivo y las nueve prácticas" loading="lazy"></div>
+        <figcaption><strong>Cada día, una sola cosa para hacer</strong>La práctica de hoy con su objetivo, y las nueve prácticas siempre abiertas.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="frame"><img src="img/practica.png" alt="Pantalla de la práctica 1 del bot con sílabas para repetir y botones Empecé, Ver teoría, Modo memoria y Si no sale" loading="lazy"></div>
+        <figcaption><strong>Una línea, varias veces, lento</strong>Cada práctica trae sus sílabas listas para repetir, con teoría y modo memoria a un toque.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="frame"><img src="img/si-no-sale.png" alt="Pantalla del bot con una ruta alternativa para conseguir el sonido, con pasos numerados y botones para pasar a la siguiente" loading="lazy"></div>
+        <figcaption><strong>Si un paso no sale, hay otro camino</strong>Rutas distintas al mismo sonido: probás una varios días y, si no funciona, pasás a la siguiente.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="frame"><div class="tgmock" role="img" aria-label="Recreación de la pantalla Mi progreso del bot, con datos de ejemplo: total de minutos, racha, minutos por semana y prácticas superadas">
+          <div class="tgbubble">Mi progreso
+
+⏱ Total: 3 h 20 min
+🔥 Racha: 5 días
+📅 Últimos 7 días: 4 de 5 practicados
+●●●●○
+
+Minutos por semana
+Esta semana
+<span class="bb">██████████</span>  85 min
+Semana pasada
+<span class="bb">████████░░</span>  70 min
+Hace 2 semanas
+<span class="bb">█████░░░░░</span>  45 min
+
+Prácticas
+✅1   ✅2   ▶️3   ⚪4   ⚪5
+⚪6   ⚪7   ⚪8   ⚪9
+✅ superada: salió en 3 días distintos
+
+Habla: escalón 1 de 5<span class="tgtime">23:12</span></div>
+          <div class="tgrow"><span>Mis hitos</span><span>Notas</span></div>
+          <div class="tgrow"><span>Menú</span></div>
+        </div></div>
+        <figcaption><strong>Ves cuánto practicaste</strong>Minutos, racha, prácticas superadas, hitos y notas propias.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="frame"><img src="img/ajustes.png" alt="Pantalla de ajustes del bot con opciones para exportar o borrar datos y llevar un resumen a la consulta" loading="lazy"></div>
+        <figcaption><strong>Tus datos y tu consulta, a mano</strong>Exportá o borrá tus datos cuando quieras y llevá un resumen a un fonoaudiólogo.</figcaption>
+      </figure>
+    </div>
+    <p class="small shots-note">Capturas reales del bot. La pantalla de progreso es una recreación con datos de ejemplo.</p>
   </div>
 </section>
 
