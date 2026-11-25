@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://geermaanv.github.io/porfinlar/sitemap.xml
+Sitemap: https://geermaanv.github.io/mesalio-la-r/sitemap.xml
