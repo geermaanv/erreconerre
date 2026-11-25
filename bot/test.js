@@ -140,6 +140,41 @@ const maxCb = () => Math.max(...callbacks().filter(Boolean).map((d) => Buffer.by
   await startAs(902, '/start'); assert.strictEqual(store.get(902).source, 'directo');
   await startAs(903, '/start <script>'); assert.strictEqual(store.get(903).source, 'directo');
 
+  // Recordatorios: opcionales, una vez por día, solo si no practicó, se pausan solos
+  await tap('se'); assert(labels().includes('Recordatorio'));
+  await tap('rm'); assert(/apagado/.test(last.text));
+  await tap('rm:h:20'); assert(/Activado a las 20:00/.test(last.text) && /Empieza mañana/.test(last.text));
+  await tap('rm:h:7'); assert(/Activado a las 20:00/.test(last.text), 'hora inválida ignorada');
+  await tap('rm:off'); assert(/apagado/.test(last.text));
+  await tap('rm:h:18'); assert(callbacks().includes('rm:off') && labels().includes('✓ 18:00'));
+
+  const AR = (iso) => new Date(iso + '-03:00').getTime(); // hora de Buenos Aires
+  const ru = (o = {}) => ({ ...L.newUser(), rem: { on: true, hour: 20, last: '2026-03-09', ignored: 0 }, ...o });
+  assert.strictEqual(L.reminderDue(ru(), AR('2026-03-10T20:30:00')), true);
+  assert.strictEqual(L.reminderDue(ru(), AR('2026-03-10T18:00:00')), false, 'antes de la hora');
+  assert.strictEqual(L.reminderDue(ru(), AR('2026-03-10T23:30:00')), false, 'fuera de la ventana de 3 horas');
+  assert.strictEqual(L.reminderDue(ru({ rem: { on: false, hour: 20, last: null, ignored: 0 } }), AR('2026-03-10T20:30:00')), false, 'apagado');
+  assert.strictEqual(L.reminderDue(ru({ rem: { on: true, hour: 20, last: '2026-03-10', ignored: 0 } }), AR('2026-03-10T20:30:00')), false, 'ya enviado hoy');
+  assert.strictEqual(L.reminderDue(ru({ minutes: [{ day: '2026-03-10', min: 5, practice: 1, source: 'manual' }] }), AR('2026-03-10T20:30:00')), false, 'ya practicó hoy');
+
+  const { sendReminders } = require('./bot.js');
+  const sent = [];
+  const rapi = { send: async (c, s) => { sent.push({ c, s }); } };
+  store.set(904, ru());
+  await sendReminders(rapi, AR('2026-03-10T20:30:00'));
+  assert.strictEqual(sent.filter((m) => m.c == 904).length, 1);
+  assert(/Es la hora de tu práctica/.test(sent.find((m) => m.c == 904).s.text) && /Cinco minutos alcanzan/.test(sent.find((m) => m.c == 904).s.text));
+  await sendReminders(rapi, AR('2026-03-10T20:40:00'));
+  assert.strictEqual(sent.filter((m) => m.c == 904).length, 1, 'no repite el mismo día');
+  // días seguidos sin practicar: cuando se acumulan 5 recordatorios ignorados (el 904 ya traía uno), avisa y se pausa solo
+  for (const d of ['11', '12', '13', '14']) await sendReminders(rapi, AR(`2026-03-${d}T20:30:00`));
+  assert.strictEqual(sent.filter((m) => m.c == 904).length, 5);
+  assert(/Pausé los recordatorios/.test(sent.filter((m) => m.c == 904).pop().s.text));
+  assert.strictEqual(store.get(904).rem.on, false);
+  await sendReminders(rapi, AR('2026-03-15T20:30:00'));
+  await sendReminders(rapi, AR('2026-03-16T20:30:00'));
+  assert.strictEqual(sent.filter((m) => m.c == 904).length, 5, 'pausado: no manda más');
+
   console.log('OK: flujo completo');
   require('fs').rmSync(process.env.BOT_DATA, { force: true });
 })().catch((e) => { console.error('FALLO:', e.message); console.error(e.stack.split('\n').slice(1, 4).join('\n')); process.exit(1); });

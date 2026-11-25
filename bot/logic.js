@@ -9,7 +9,20 @@ const newUser = () => ({
   start: 1, testDone: false, perfil: null, minutes: [], ratings: [], hitos: {}, notes: [],
   deck: null, dose: null, sinSeparar: false, session: null, pending: null, awaiting: null,
   flags: {}, rutas: [], fase2: 0, mantAbierto: false,
+  rem: { on: false, hour: 20, last: null, ignored: 0 },
 });
+
+const hourOf = (ts = Date.now()) => +new Intl.DateTimeFormat('en-GB', { timeZone: TZ, hour: '2-digit', hourCycle: 'h23' }).format(ts);
+// Recordatorio diario: una vez por día, dentro de las 3 horas siguientes a la hora elegida,
+// y solo si la persona todavía no practicó ese día.
+function reminderDue(u, ts = Date.now()) {
+  const r = u.rem;
+  if (!r || !r.on) return false;
+  const today = dayKey(ts), h = hourOf(ts);
+  if (h < r.hour || h >= r.hour + 3) return false;
+  if (r.last === today) return false;
+  return !u.minutes.some((e) => e.day === today);
+}
 
 const totalMinutes = (u) => u.minutes.reduce((s, e) => s + e.min, 0);
 const practiceDays = (u) => new Set(u.minutes.map((e) => e.day));
@@ -63,4 +76,4 @@ function grade(card, g, today) {
   card.due = addDays(today, INTERVALOS[card.box]);
 }
 
-module.exports = { salioOk, guidedSessions, derivacion, dayKey, addDays, fmtMin, newUser, totalMinutes, streak, daysInLast7, minutesInWindow, salioDays, superada, hoy, lastRatings, hasHistory, dueCards, grade, INTERVALOS };
+module.exports = { hourOf, reminderDue, practiceDays, salioOk, guidedSessions, derivacion, dayKey, addDays, fmtMin, newUser, totalMinutes, streak, daysInLast7, minutesInWindow, salioDays, superada, hoy, lastRatings, hasHistory, dueCards, grade, INTERVALOS };

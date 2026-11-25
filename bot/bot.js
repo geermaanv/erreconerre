@@ -193,6 +193,41 @@ function logMinutes(u, practice, min, source) {
 const rateKb = [[B('Salió', 'rt:s'), B('A medias', 'rt:m'), B('No salió', 'rt:n')]];
 
 // ---------- enrutador ----------
+const hh = (h) => String(h).padStart(2, '0') + ':00';
+function reminderScreen(u, justSet) {
+  const r = u.rem, on = r && r.on;
+  const text = on
+    ? `Recordatorio diario\n\nActivado a las ${hh(r.hour)}.${justSet ? ' Empieza mañana.' : ''} Te escribo una vez por día, solo si todavía no practicaste. Si pasan 5 días sin que practiques, lo pauso solo.\n\nPodés cambiar la hora o apagarlo.`
+    : 'Recordatorio diario\n\nEstá apagado. Si lo activás, te escribo una vez por día a la hora que elijas, solo si todavía no practicaste. Empieza mañana.\n\nElegí la hora:';
+  const hours = [8, 12, 18, 20, 21].map((h) => B((on && r.hour === h ? '✓ ' : '') + hh(h), `rm:h:${h}`));
+  return { text, kb: [hours.slice(0, 3), hours.slice(3), ...(on ? [[B('Apagar', 'rm:off')]] : []), [B('Ajustes', 'se'), B('Menú', 'm')]] };
+}
+
+function reminderText(u) {
+  const h = L.hoy(u), p = h && C.PRACTICES[h - 1];
+  const hoy = p ? `Hoy: práctica ${h} · ${p.name}.\nObjetivo: ${p.objetivo}` : 'Hoy podés repasar con Mantenimiento o seguir con Habla.';
+  return { text: `Es la hora de tu práctica.\n\n${hoy}\n\nCinco minutos alcanzan.`, kb: [[B('Empezar', h ? `l:${h}:0` : 'm')], [B('Pausar recordatorios', 'rm:off')]] };
+}
+
+// Envía los recordatorios que toquen. Una vez por día por persona; se pausa solo tras 5 días sin practicar.
+async function sendReminders(api, now = Date.now()) {
+  for (const [chat, u0] of Object.entries(store.all())) {
+    const u = Object.assign(L.newUser(), u0);
+    if (!L.reminderDue(u, now)) continue;
+    const r = u.rem, today = L.dayKey(now);
+    r.ignored = r.last && !L.practiceDays(u).has(r.last) ? (r.ignored || 0) + 1 : 0;
+    if (r.ignored >= 5) {
+      r.on = false; r.ignored = 0; store.set(chat, u);
+      await api.send(chat, { text: 'Pausé los recordatorios porque pasaron varios días sin practicar. Cuando quieras, los volvés a activar en Ajustes. Sin apuro.', kb: [[B('Ir al menú', 'm')]] }).catch(() => {});
+      continue;
+    }
+    r.last = today;
+    try { await api.send(chat, reminderText(u)); }
+    catch (e) { if (/blocked|deactivated|not found/i.test(e.message)) r.on = false; else { r.last = null; console.error('recordatorio:', e.message); } }
+    store.set(chat, u);
+  }
+}
+
 function route(u, data, ctx) {
   const [a, x, y] = data.split(':');
   const today = L.dayKey();
@@ -357,7 +392,12 @@ function route(u, data, ctx) {
     case 'cs': return { text: C.CONSULTA, kb: [[B('Qué llevar a la consulta', 'cq')], [B('Volver', 'se')]] };
     case 'cq': return consultaResumen(u);
     case 'sg': return { text: C.SEGURIDAD, kb: [[B('Volver', 'se')]] };
-    case 'se': return { text: 'Ajustes', kb: [[B('Cómo funciona', 'in:0'), B('Rehacer el test', 'ts')], [B('Cuándo consultar', 'cs'), B('Qué llevar a la consulta', 'cq')], [B('Seguridad', 'sg')], [B('Exportar mis datos', 'ex'), B('Borrar mis datos', 'dl')], MENU] };
+    case 'rm': {
+      if (x === 'h' && [8, 12, 18, 20, 21].includes(+y)) u.rem = { ...u.rem, on: true, hour: +y, last: today, ignored: 0 };
+      if (x === 'off') u.rem = { ...u.rem, on: false, ignored: 0 };
+      return reminderScreen(u, x === 'h' && u.rem.on);
+    }
+    case 'se': return { text: 'Ajustes', kb: [[B('Cómo funciona', 'in:0'), B('Rehacer el test', 'ts')], [B('Cuándo consultar', 'cs'), B('Qué llevar a la consulta', 'cq')], [B('Recordatorio', 'rm'), B('Seguridad', 'sg')], [B('Exportar mis datos', 'ex'), B('Borrar mis datos', 'dl')], MENU] };
     case 'ex': { const j = JSON.stringify(u); return { text: j.length < 3800 ? j : `Tus datos son demasiado largos para mostrarlos acá (${j.length} caracteres). En esta versión de prueba, la exportación completa no está disponible.`, kb: [[B('Volver', 'se')]] }; }
     case 'dl': return { text: 'Se borrarán todos tus datos: minutos, hitos, notas y mazo. No se puede deshacer.', kb: [[B('Sí, borrar todo', 'dl!'), B('Cancelar', 'se')]] };
     case 'dl!': ctx.deleted = true; return { text: 'Listo. Se borraron todos tus datos. Escribí /start para empezar de nuevo.', kb: [] };
@@ -412,6 +452,8 @@ async function main() {
   const me = await tg('getMe');
   console.log(`Bot en línea: @${me.username}`);
   await tg('setMyCommands', { commands: [{ command: 'menu', description: 'Menú principal' }, { command: 'ayuda', description: 'Cómo funciona' }, { command: 'borrar', description: 'Borrar mis datos' }] }).catch(() => {});
+  sendReminders(realApi).catch((e) => console.error('recordatorios:', e.message));
+  setInterval(() => sendReminders(realApi).catch((e) => console.error('recordatorios:', e.message)), 5 * 60 * 1000);
   let offset = 0;
   for (;;) {
     try {
@@ -424,5 +466,5 @@ async function main() {
   }
 }
 
-module.exports = { handle, route, onText, menu, tg };
+module.exports = { handle, route, onText, menu, tg, sendReminders };
 if (require.main === module) main();

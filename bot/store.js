@@ -9,4 +9,4 @@ function save() {
   fs.writeFileSync(tmp, JSON.stringify(db));
   fs.renameSync(tmp, FILE);
 }
-module.exports = { get: (id) => db[id], set: (id, u) => { db[id] = u; save(); }, del: (id) => { delete db[id]; save(); }, save };
+module.exports = { all: () => db, get: (id) => db[id], set: (id, u) => { db[id] = u; save(); }, del: (id) => { delete db[id]; save(); }, save };

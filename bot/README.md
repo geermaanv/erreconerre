@@ -44,14 +44,36 @@ Simula Telegram sin red y sin token. Cubre el flujo completo: introducción, tes
 - **Derivación:** aviso tras 12 sesiones o 4 semanas en las prácticas 1 a 3 sin "Salió", después de probar las rutas. En Ajustes: "Cuándo consultar", "Qué llevar a la consulta" (resumen generado) y "Seguridad".
 - **Habla** (fase 2): escalera de 5 escalones de presión.
 - **Mantenimiento** con escalera de 1, 2, 4, 8 y 16 días, palabras y frases. Se abre con el hito "En frases" estable, con el test, o a pedido.
+- **Recordatorio diario** opcional (Ajustes → Recordatorio): una vez por día, a la hora que elija la persona, solo si todavía no practicó. Empieza al día siguiente de activarlo y se pausa solo después de 5 días sin practicar. Necesita que el bot esté corriendo todo el día.
 - Práctica libre, progreso, hitos, notas, comunidad, exportar y borrar.
 
 ## Qué falta o difiere del método
 
-- No hay recordatorios programados ni "Pausa" en el cronómetro.
+- No hay "Pausa" en el cronómetro.
 - No hay audio: la escucha es con pares para leer y grabándose con el teléfono.
 - Los minutos cargados a mano no piden calificación.
 - Habla se sube de escalón a mano. El bot sugiere subir tras 5 días con "Salió" en una semana.
 - La asociación entre prácticas e hitos para sugerir "Estable" cubre sílabas, palabras y frases.
 - Los textos son propuestas y los tiene que revisar el autor del método.
 - El estado se guarda en un archivo local. No es adecuado para producción.
+
+## Dejarlo corriendo siempre (macOS)
+
+Los recordatorios solo salen si el bot está encendido a esa hora. En una Mac, un servicio de usuario (`launchd`) lo arranca al iniciar sesión y lo reinicia si se cae. Mientras la Mac esté prendida y con la sesión abierta, funciona; si se apaga o duerme, los recordatorios de ese rato no salen.
+
+1. Guardá el token en un archivo privado (no en el repositorio):
+
+```bash
+mkdir -p ~/.config/porfinlar && printf 'TELEGRAM_BOT_TOKEN=%s\n' 'PEGAR_TOKEN' > ~/.config/porfinlar/bot.env && chmod 600 ~/.config/porfinlar/bot.env
+```
+
+2. Copiá la plantilla, reemplazando `RUTA_DEL_REPO` y `HOME` por tus rutas, y activala:
+
+```bash
+sed -e "s#RUTA_DEL_REPO#$PWD#" -e "s#HOME#$HOME#" bot/launchd/com.porfinlar.bot.plist.template > ~/Library/LaunchAgents/com.porfinlar.bot.plist
+launchctl load ~/Library/LaunchAgents/com.porfinlar.bot.plist
+```
+
+(ejecutado desde la raíz del repositorio). Para apagarlo: `launchctl unload ~/Library/LaunchAgents/com.porfinlar.bot.plist`. El registro queda en `~/Library/Logs/porfinlar-bot.log`.
+
+Para que no dependa de tu Mac, la alternativa es un servidor que esté siempre encendido (por ejemplo una máquina virtual gratuita de algún proveedor). El bot no tiene dependencias: solo necesita Node 18 o superior y la variable `TELEGRAM_BOT_TOKEN`.
