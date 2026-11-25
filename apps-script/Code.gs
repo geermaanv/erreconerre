@@ -3,7 +3,7 @@
 // y el mail solo la enlaza. Para cambiarla, editás la página, no este script.
 
 const SITE = 'https://geermaanv.github.io/mesalio-la-r/';
-const BOT = 'https://t.me/porfinlar_bot';
+const BOT = 'https://t.me/mesalio_la_r_bot';
 const NOMBRE = 'Germán · Me salió la R';
 const MAX_POR_DIA = 80; // tope propio, por debajo del límite de Gmail
 

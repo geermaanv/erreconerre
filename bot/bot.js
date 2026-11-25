@@ -409,7 +409,7 @@ function onText(u, text, ctx) {
   const t = text.trim(), cmd = t.split(/[ @]/)[0];
   if (cmd === '/start') {
     u.awaiting = null;
-    // Origen de la visita (ej. t.me/porfinlar_bot?start=dia1). Solo se guarda la etiqueta, la primera vez.
+    // Origen de la visita (ej. t.me/mesalio_la_r_bot?start=dia1). Solo se guarda la etiqueta, la primera vez.
     if (!u.joined) { u.joined = L.dayKey(); const p = (t.split(/\s+/)[1] || '').toLowerCase(); u.source = /^[a-z0-9_-]{1,32}$/.test(p) ? p : 'directo'; }
     return u.testDone ? menu(u) : welcome();
   }

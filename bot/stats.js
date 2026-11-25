@@ -1,6 +1,6 @@
 // Estadísticas agregadas del bot, sin datos personales.
 // Uso: node bot/stats.js   (o BOT_DATA=/ruta/state.json node bot/stats.js)
-// Cuenta personas por origen (t.me/porfinlar_bot?start=<origen>) y cuántas siguen activas.
+// Cuenta personas por origen (t.me/mesalio_la_r_bot?start=<origen>) y cuántas siguen activas.
 // No imprime ids de chat, notas ni palabras: solo números.
 const fs = require('fs');
 const path = require('path');

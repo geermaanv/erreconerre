@@ -9,7 +9,7 @@ Estado: borrador para revisar. Fecha: 2026-11-24. Se basa en `metodo-v1.md` y en
 - **El objetivo del curso es llevar a la persona al bot.** El email es igual para todos. El bot adapta la práctica a cómo le sale hoy la R y lleva la cuenta.
 - **Remitente:** «Germán · Me salió la R». Cada email va firmado «— Germán»: es una historia real y la firma lo muestra. Debajo de la firma va una línea con el email personal de Germán (reemplazar `{mi email}` al cargarlo en la herramienta; no se escribe acá porque este repositorio es público).
 - **Voz:** primera persona, voseo, tono sobrio. Nada de promesas de cura ni de plazos.
-- **Cada email cierra igual:** el botón a `https://t.me/porfinlar_bot`, un aviso corto de que no reemplaza a un fonoaudiólogo y un link para darse de baja.
+- **Cada email cierra igual:** el botón a `https://t.me/mesalio_la_r_bot`, un aviso corto de que no reemplaza a un fonoaudiólogo y un link para darse de baja.
 
 ## Reglas de lo que se puede decir
 
