@@ -2,7 +2,7 @@
 // un mail corto desde tu Gmail. La guía completa NO está acá: vive en el sitio
 // y el mail solo la enlaza. Para cambiarla, editás la página, no este script.
 
-const SITE = 'https://geermaanv.github.io/mesalio-la-r/';
+const SITE = 'https://mesaliolar.com/';
 const BOT = 'https://t.me/mesalio_la_r_bot';
 const NOMBRE = 'Germán · Me salió la R';
 const MAX_POR_DIA = 80; // tope propio, por debajo del límite de Gmail
