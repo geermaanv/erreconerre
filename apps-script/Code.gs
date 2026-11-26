@@ -7,6 +7,12 @@ const BOT = 'https://t.me/mesalio_la_r_bot';
 const NOMBRE = 'Germán · Me salió la R';
 const MAX_POR_DIA = 80; // tope propio, por debajo del límite de Gmail
 
+// Ejecutala a mano desde el editor: pide los permisos y te manda a vos el mail de prueba.
+function probar() {
+  GmailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Prueba · Cómo empezar con Me salió la R', cuerpo(), { name: NOMBRE });
+  SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getLastRow(); // pide el permiso de la hoja
+}
+
 function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -21,7 +27,7 @@ function doPost(e) {
 
     // Un solo mail por dirección: evita que usen tu Gmail para molestar a alguien.
     const emails = hoja.getRange(1, 2, hoja.getLastRow(), 1).getValues().flat();
-    if (emails.indexOf(email) !== -1) return salida(true);
+    if (emails.indexOf(seguro(email)) !== -1 || emails.indexOf(email) !== -1) return salida(true, false);
 
     const hoy = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
     const props = PropertiesService.getScriptProperties();
@@ -38,8 +44,9 @@ function doPost(e) {
       enviado = 'sí';
     }
     hoja.appendRow([new Date(), seguro(email), seguro(String(d.origen || '').slice(0, 40)), enviado]);
-    return salida(true);
+    return salida(true, puedeEnviar);
   } catch (err) {
+    console.error(err); // se ve en Apps Script, en "Ejecuciones"
     return salida(false);
   } finally {
     lock.releaseLock();
@@ -74,7 +81,7 @@ function cuerpo() {
 // Evita que una celda empiece con = + - @ y se tome como fórmula.
 function seguro(t) { return /^[=+\-@]/.test(t) ? "'" + t : t; }
 
-function salida(ok) {
-  return ContentService.createTextOutput(JSON.stringify({ ok: ok }))
+function salida(ok, enviado) {
+  return ContentService.createTextOutput(JSON.stringify({ ok: ok, enviado: !!enviado }))
     .setMimeType(ContentService.MimeType.JSON);
 }

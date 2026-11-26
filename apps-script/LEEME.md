@@ -6,7 +6,7 @@ Qué hace: cuando alguien deja su email en la landing, el script lo guarda en un
 
 1. En Google Drive creá una hoja de cálculo nueva. Nombre sugerido: "Me salió la R · contactos".
 2. En la hoja: **Extensiones → Apps Script**. Borrá lo que haya y pegá el contenido de `Code.gs`.
-3. Guardá. Ejecutá una vez `doPost` desde el editor solo para que Google te pida los permisos (Gmail y hojas). Va a fallar por no tener datos: es normal. Aceptá los permisos.
+3. Guardá. En el selector de funciones elegí `probar` y tocá **Ejecutar**. Google te pide permisos (Gmail y hojas): aceptalos. Como el script es tuyo y no está verificado, aparece un aviso: *Configuración avanzada → Ir a (nombre del proyecto)*. Te tiene que llegar un mail de prueba.
 4. **Implementar → Nueva implementación → Aplicación web.**
    - Ejecutar como: **yo**.
    - Quién tiene acceso: **cualquier persona**.
