@@ -38,7 +38,7 @@ Al empezar pregunta el objetivo. Son dos circuitos y se cambia desde "Más".
 
 **Aprender** (nueve prácticas, en orden)
 
-- Inicio: práctica de hoy, minutos, "Empezar ejercicio" y "Más".
+- Inicio: práctica de hoy, minutos, "Empezar ejercicio" y "Más". Si ya ejercitó ese día, lo dice, muestra en cuántos días vibró y ofrece seguir. Con las nueve completas se puede repetir la 9.
 - El mensaje del ejercicio queda siempre a la vista. Botones: "Terminé" y "Ayuda" (cómo se hace y, en las prácticas 1 a 4, otros caminos al sonido; llega en un mensaje aparte). La primera vez de cada práctica, la explicación llega antes del ejercicio.
 - El tiempo corre desde "Empezar ejercicio", con un tope de 30 minutos por sesión.
 - Al terminar hay una sola pregunta: "¿La R vibró?". Una práctica se supera cuando vibra en 3 días distintos. Al completar las nueve, propone pasar a Practicar.
@@ -46,12 +46,12 @@ Al empezar pregunta el objetivo. Son dos circuitos y se cambia desde "Más".
 
 **Practicar** (en el código, modo `mantener`)
 
-- Repaso de palabras y frases con intervalos de 1, 2, 4, 8 y 16 días. La palabra se muestra entera ("Salió bien" o "Me costó") y al final se listan las que costaron. El repaso suma minutos.
+- Repaso de palabras y frases con intervalos de 1, 2, 4, 8 y 16 días. La palabra se muestra entera ("Salió bien" o "Me costó") y al final se listan las que costaron. El repaso suma minutos con cada palabra, aunque no se termine.
 - La persona agrega las palabras que se le traban.
 
 **Más:** recordatorio diario, cambiar de circuito y mis datos (exportar y borrar).
 
-**Recordatorio diario** (opcional): una vez por día, a la hora que elija la persona, solo si todavía no practicó. Empieza al día siguiente y se pausa solo después de 5 días sin practicar. Necesita que el bot esté corriendo todo el día.
+**Recordatorio diario** (opcional): una vez por día, a la hora que elija la persona, solo si todavía no practicó (en Practicar, además, solo si hay palabras para ese día). Empieza al día siguiente y se pausa solo después de 5 días sin practicar. Necesita que el bot esté corriendo todo el día.
 
 ## Qué falta o difiere del método
 

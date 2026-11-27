@@ -43,19 +43,32 @@ const welcome = () => modeScreen(`${C.SALUDO}\n\n`);
 const totalLine = (u) => `Llevás ${L.fmtMin(L.totalMinutes(u))}.`;
 const MORE = [B('Más', 'mas')];
 
+const SEGUIR = 'Hoy ya ejercitaste. Si querés, podés seguir.';
 function learnHome(u, prefix) {
-  const h = L.hoy(u);
-  if (!h) return { text: `${prefix}🟢 Aprender\n\nCompletaste los nueve ejercicios.\n${totalLine(u)}`, kb: [[B('Pasar a Practicar', 'mo:m')], MORE] };
-  return { text: `${prefix}🟢 Aprender\n\nEjercicio ${h} de 9 · ${practiceName(h)}\n${totalLine(u)}`, kb: [[B('▶ Empezar ejercicio', `ej:${h}`)], MORE] };
+  const h = L.hoy(u), today = L.dayKey();
+  const done = u.minutes.some((e) => e.day === today && e.source === 'guiada');
+  if (!h) return {
+    text: `${prefix}🟢 Aprender\n\nCompletaste los nueve ejercicios.\n${done ? `${SEGUIR}\n` : ''}${totalLine(u)}`,
+    kb: [[B('Pasar a Practicar', 'mo:m')], [B('▶ Repetir el ejercicio 9', 'ej:9')], MORE],
+  };
+  const lines = [`Ejercicio ${h} de 9 · ${practiceName(h)}`, done && `Vibró en ${L.salioDays(u, h).size} de 3 días.`, totalLine(u)].filter(Boolean).join('\n');
+  return {
+    text: `${prefix}🟢 Aprender\n\n${done ? `${SEGUIR}\n\n` : ''}${lines}`,
+    kb: [[B(done ? '▶ Seguir ejercitando' : '▶ Empezar ejercicio', `ej:${h}`)], MORE],
+  };
 }
 
 const ensureDeck = (u) => { if (!u.deck) u.deck = {}; if (!u.flags.mazo) { u.flags.mazo = true; const today = L.dayKey(); for (const w of C.seedDeck()) u.deck[w] = u.deck[w] || { box: 0, due: today }; } };
+const plural = (n) => `${n} ${n === 1 ? 'palabra' : 'palabras'}`;
+const reviewedOn = (u, day) => u.minutes.filter((e) => e.day === day && e.source === 'repaso').reduce((t, e) => t + (e.words || 0), 0);
 function keepHome(u, prefix) {
   ensureDeck(u);
-  const n = L.dueCards(u, L.dayKey()).length;
+  const today = L.dayKey(), n = L.dueCards(u, today).length, done = reviewedOn(u, today);
+  let status = 'Hoy no quedan palabras para repasar.';
+  if (n) status = done ? `Hoy ya repasaste ${plural(done)}.\nSi querés, seguí con ${n === 1 ? 'otra' : `otras ${n}`}.` : `Hoy: ${plural(n)} para repasar.`;
   return {
-    text: `${prefix}🔵 Practicar\n\n${n ? `Hoy: ${n} ${n === 1 ? 'palabra' : 'palabras'} para repasar.` : 'Hoy no quedan palabras para repasar.'}\n${totalLine(u)}`,
-    kb: [...(n ? [[B('▶ Repasar', 'mi')]] : []), [B('Agregar mis palabras', 'mad')], MORE],
+    text: `${prefix}🔵 Practicar\n\n${status}\n${totalLine(u)}`,
+    kb: [...(n ? [[B(done ? '▶ Seguir repasando' : '▶ Repasar', 'mi')]] : []), [B('Agregar mis palabras', 'mad')], MORE],
   };
 }
 
@@ -76,7 +89,7 @@ function exerciseScreen(n, i, s, open = true) {
     open ? `${C.PRACTICES[n - 1].pie || (C.PRACTICES[n - 1].split && pages[i].includes(' · ') ? 'Leé la palabra, decila por partes y volvé a unirla.' : 'Una línea, varias veces, lento.')} Cuando termines, tocá Terminé.` : null].filter(Boolean).join('\n\n');
   if (!open) return { text, kb: [] };
   const kb = [];
-  if (t > 1) kb.push([B('◀', `pg:${n}:${Math.max(0, i - 1)}`), B(`${i + 1}/${t}`, `pg:${n}:${i}`), B('▶', `pg:${n}:${Math.min(t - 1, i + 1)}`)]);
+  if (t > 1) kb.push([B('◀', `pg:${n}:${(i + t - 1) % t}`), B(`${i + 1}/${t}`, `pg:${n}:${i}`), B('▶', `pg:${n}:${(i + 1) % t}`)]);
   kb.push([B('Terminé', `fin:${n}`)], [B('Ayuda', `th:${n}`)]);
   return { text, kb };
 }
@@ -94,11 +107,11 @@ function pathScreen(n, i) {
   const nav = [];
   if (i > 0) nav.push(B('◀ Anterior', `ns:${n}:${i - 1}`));
   if (i < t - 1) nav.push(B('Otro camino ▶', `ns:${n}:${i + 1}`));
-  return { text: `Otros caminos  (${i + 1}/${t})\n\nSon formas distintas de llegar al mismo sonido. Probá uno varios días; si no funciona, pasá al siguiente.\n\n${r.name}\n\n${r.texto}`, kb: [nav] };
+  return { text: `Otros caminos  (${i + 1}/${t})\n\nSon formas distintas de llegar al mismo sonido. Probá uno varios días; si no funciona, pasá al siguiente.\n\n${r.name}\n\n${r.texto}`, kb: [nav, [B('Volver a la explicación', `tv:${n}`)]] };
 }
 
 function startExercise(u, n) {
-  if (u.mode !== 'aprender' || n !== L.hoy(u)) return menu(u); // solo la práctica de hoy
+  if (u.mode !== 'aprender' || n !== (L.hoy(u) || 9)) return menu(u); // solo el ejercicio de hoy; con los nueve completos, el 9
   const p = C.PRACTICES[n - 1];
   const cue = p.cues[L.guidedSessions(u) % p.cues.length];
   const extra = n === 3 && stuck(u, 3) ? p.extra : null;
@@ -173,6 +186,17 @@ function reviewSummary(d) {
   return { text: t, kb: [[B('Listo', 'm')]] };
 }
 
+// Se anota con cada palabra, así lo repasado cuenta aunque la persona salga a la mitad.
+function logReview(u, d, today) {
+  d.start = d.start || Date.now();
+  const same = u.minutes.filter((x) => x.source === 'repaso' && x.dose === d.start);
+  let e = same.find((x) => x.day === today);
+  // Si un repaso quedó abierto y se sigue otro día, ese día se cuenta aparte y desde ahora.
+  if (!e) u.minutes.push((e = { day: today, practice: 11, source: 'repaso', dose: d.start, since: same.length ? Date.now() : d.start, words: 0 }));
+  e.min = L.elapsedMin(e.since);
+  e.words++;
+}
+
 // ---------- Más ----------
 const moreScreen = (u) => ({
   text: 'Más',
@@ -183,9 +207,10 @@ const moreScreen = (u) => ({
 const hh = (h) => String(h).padStart(2, '0') + ':00';
 function reminderScreen(u, justSet) {
   const r = u.rem, on = r && r.on;
+  const cond = u.mode === 'mantener' ? ' y tenés palabras para repasar' : '';
   const text = on
-    ? `Recordatorio diario\n\nActivado a las ${hh(r.hour)}, hora de Argentina.${justSet ? ' Empieza mañana.' : ''} Te escribo una vez por día, solo si todavía no ejercitaste. Si pasan 5 días sin que ejercites, lo pauso solo.\n\nPodés cambiar la hora o apagarlo.`
-    : 'Recordatorio diario\n\nEstá apagado. Si lo activás, te escribo una vez por día a la hora que elijas, solo si todavía no ejercitaste. Empieza mañana.\n\nElegí la hora (de Argentina):';
+    ? `Recordatorio diario\n\nActivado a las ${hh(r.hour)}, hora de Argentina.${justSet ? ' Empieza mañana.' : ''} Te escribo una vez por día, solo si todavía no ejercitaste${cond}. Si pasan 5 días sin que ejercites, lo pauso solo.\n\nPodés cambiar la hora o apagarlo.`
+    : `Recordatorio diario\n\nEstá apagado. Si lo activás, te escribo una vez por día a la hora que elijas, solo si todavía no ejercitaste${cond}. Empieza mañana.\n\nElegí la hora (de Argentina):`;
   const hours = [8, 12, 18, 20, 21].map((h) => B((on && r.hour === h ? '✓ ' : '') + hh(h), `rm:h:${h}`));
   return { text, kb: [hours.slice(0, 3), hours.slice(3), ...(on ? [[B('Apagar', 'rm:off')]] : []), [B('Volver', 'mas')]] };
 }
@@ -193,7 +218,7 @@ function reminderScreen(u, justSet) {
 function reminderText(u) {
   let what = 'Entrá y elegí cómo seguir.', button = B('Empezar', 'm');
   const h = L.hoy(u);
-  if (u.mode === 'mantener') what = 'Hoy podés repasar tus palabras.';
+  if (u.mode === 'mantener') { what = 'Hoy podés repasar tus palabras.'; button = B('Empezar', 'mi'); }
   else if (u.mode === 'aprender' && h) { what = `Hoy: ejercicio ${h} · ${practiceName(h)}.\nObjetivo: ${C.PRACTICES[h - 1].objetivo}`; button = B('▶ Empezar ejercicio', `ej:${h}`); }
   return { text: `Es la hora de ejercitar.\n\n${what}\n\nCinco minutos alcanzan.`, kb: [[button], [B('Pausar recordatorios', 'rm:off')]] };
 }
@@ -204,6 +229,7 @@ async function sendReminders(api, now = Date.now()) {
     const u = Object.assign(L.newUser(), u0);
     if (!L.reminderDue(u, now)) continue;
     const r = u.rem, today = L.dayKey(now);
+    if (u.mode === 'mantener' && !L.dueCards(u, today).length) continue; // no hay nada para repasar: hoy no se avisa
     r.ignored = r.last && !L.practiceDays(u).has(r.last) ? (r.ignored || 0) + 1 : 0;
     if (r.ignored >= 5) {
       r.on = false; r.ignored = 0; store.set(chat, u);
@@ -239,6 +265,7 @@ function route(u, data, ctx) {
     // La ayuda llega en un mensaje aparte, para no tapar la lista; las flechas editan ese mensaje.
     case 'th': return C.PRACTICES[+x - 1] ? fresh(helpScreen(+x)) : menu(u);
     case 'ns': return y === undefined ? fresh(pathScreen(+x, 0)) : pathScreen(+x, +y);
+    case 'tv': return C.PRACTICES[+x - 1] ? helpScreen(+x) : menu(u); // reemplaza el mensaje de los caminos
     case 'fin': return finish(u, +x);
     case 'r': return answer(u, x);
     case 'mi': {
@@ -254,9 +281,9 @@ function route(u, data, ctx) {
       if (u.deck[d.queue[d.i]]) L.grade(u.deck[d.queue[d.i]], g, today);
       if (g === 's') d.s = (d.s || 0) + 1; else (d.missed = d.missed || []).push(d.queue[d.i]);
       d.i++;
+      logReview(u, d, today);
       if (d.i < d.queue.length) return cardScreen(u);
       u.dose = null;
-      u.minutes.push({ day: today, min: L.elapsedMin(d.start || Date.now()), practice: 11, source: 'repaso' });
       return reviewSummary(d);
     }
     case 'mad': u.awaiting = 'addword'; return { text: 'Escribí una palabra o frase que se te traba.', kb: [HOME] };
@@ -290,8 +317,10 @@ function onText(u, text, ctx) {
     ensureDeck(u);
     // Se respetan las mayúsculas; si ya estaba escrita de otra forma, no se duplica.
     const w = Object.keys(u.deck).find((k) => k.toLocaleLowerCase('es') === typed.toLocaleLowerCase('es')) || typed;
-    u.deck[w] = u.deck[w] || { box: 0, due: L.dayKey() };
-    return { text: `Agregada: ${w}`, kb: [[B('Agregar otra', 'mad'), B('Listo', 'm')]] };
+    const known = u.deck[w];
+    if (known) known.due = L.dayKey();
+    else u.deck[w] = { box: 0, due: L.dayKey() };
+    return { text: known ? `${w} ya estaba en tu lista. La sumo al repaso de hoy.` : `Agregada: ${w}`, kb: [[B('Agregar otra', 'mad'), B('Listo', 'm')]] };
   }
   return menu(u, 'Usá los botones para moverte.\n\n');
 }

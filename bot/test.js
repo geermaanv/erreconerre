@@ -49,6 +49,8 @@ const daysAgo = (n) => L.addDays(L.dayKey(), -n);
   await tapOn(exId, 'th:1'); const helpId = last.id; assert(helpId !== exId && /Cómo se hace/.test(last.text)); assert.deepStrictEqual(labels(), ['Otros caminos']);
   await tapOn(helpId, 'ns:1:0'); assert(last.id === helpId && /\(1\/6\)/.test(last.text) && /La R simple/.test(last.text), 'mismo orden para todos');
   await tapOn(helpId, 'ns:1:1'); assert(last.id === helpId && /Desde la t y la d/.test(last.text) && !/Ruta/.test(last.text));
+  assert(labels().includes('Volver a la explicación'));
+  await tapOn(helpId, 'tv:1'); assert(last.id === helpId && /Cómo se hace/.test(last.text) && labels().includes('Otros caminos'));
   assert.strictEqual(chat.get(exId).text, exText, 'la ayuda no tapa el ejercicio');
 
   patch((u) => { u.session.start -= 5 * 60000; });
@@ -62,6 +64,9 @@ const daysAgo = (n) => L.addDays(L.dayKey(), -n);
   await tap('r:s'); assert.strictEqual(user().ratings.length, 1, 'no se anota dos veces');
   await tapOn(exId, 'fin:1'); assert(/ya estaba cerrado/.test(last.text) && last.id !== exId);
   assert.strictEqual(user().minutes.length, 1);
+
+  await tap('m'); assert(/Hoy ya ejercitaste\. Si querés, podés seguir\.\n\nEjercicio 1 de 9 · .*\nVibró en 1 de 3 días\.\nLlevás/.test(last.text), last.text);
+  assert.deepStrictEqual(labels(), ['▶ Seguir ejercitando', 'Más']);
 
   // la segunda vez no repite la explicación y edita el mismo mensaje
   await tap('m'); const h2 = last.id; await tap('ej:1'); assert(last.id === h2 && /Ejercicio 1 · /.test(last.text) && !/Cómo se hace ·/.test(last.text));
@@ -96,6 +101,9 @@ const daysAgo = (n) => L.addDays(L.dayKey(), -n);
     assert.deepStrictEqual([...shown].sort(), [...all].sort(), `ejercicio ${n}: están todas las palabras, sin repetir`);
   }
   assert(labels().includes('▶'));
+  const total = C.pagesFor(5).length;
+  assert.strictEqual(last.kb[0][0].d, `pg:5:${total - 1}`, 'atrás en la primera lleva a la última');
+  await tapOn(e5, `pg:5:${total - 1}`); assert.strictEqual(last.kb[0][2].d, 'pg:5:0', 'adelante en la última lleva a la primera');
   await tapOn(e5, 'pg:5:1'); assert(last.id === e5 && /\(2\//.test(last.text));
   await tapOn(e5, 'th:5'); assert(last.id !== e5 && !/Si no sale/.test(last.text) && /pero \/ perro/.test(last.text) && !labels().length);
   await tapOn(e5, 'fin:5'); assert(/\(2\//.test(chat.get(e5).text), 'queda en la página en que estaba');
@@ -111,23 +119,40 @@ const daysAgo = (n) => L.addDays(L.dayKey(), -n);
   patch((u) => { u.start = 1; u.ratings = []; for (let p = 1; p <= 9; p++) for (let d = 1; d <= (p === 9 ? 2 : 3); d++) u.ratings.push({ practice: p, rating: 's', day: daysAgo(d) }); });
   await tap('m'); await tap('ej:9'); await tap('fin:9'); await tap('r:s');
   assert(/Completaste los nueve/.test(last.text) && labels().includes('Pasar a Practicar'));
-  await tap('m'); assert.deepStrictEqual(labels(), ['Pasar a Practicar', 'Más']);
+  await tap('m'); assert.deepStrictEqual(labels(), ['Pasar a Practicar', '▶ Repetir el ejercicio 9', 'Más']);
+  assert(/Completaste los nueve ejercicios\.\nHoy ya ejercitaste/.test(last.text), last.text);
+  await tap('ej:9'); assert(/^Ejercicio 9 · /.test(last.text), last.text);
+  await tap('fin:9'); await tap('r:s'); assert(/ya lo tenías superado/.test(last.text));
+  await tap('ej:3'); assert(/Completaste los nueve/.test(last.text), 'con todo completo solo se repite el 9');
 
   // ---------- Practicar (repaso de palabras) ----------
   await tap('mo:m'); assert(/🔵 Practicar/.test(last.text) && /7 palabras/.test(last.text), last.text);
   assert.deepStrictEqual(labels(), ['▶ Repasar', 'Agregar mis palabras', 'Más']);
   const before = user().minutes.length;
+  await tap('mi'); await tap('mg:s'); await tap('mg:s'); await msg('/menu');
+  assert.strictEqual(user().minutes.length, before + 1, 'lo repasado cuenta aunque no termine');
+  assert(/Hoy ya repasaste 2 palabras\.\nSi querés, seguí con otras 7\./.test(last.text), last.text);
+  patch((u) => { u.minutes[u.minutes.length - 1].day = daysAgo(1); }); // quedó abierto desde ayer
+  await tap('mi'); await tap('mg:s');
+  patch((u) => { u.minutes[u.minutes.length - 1].day = daysAgo(1); }); await tap('mg:s');
+  assert.deepStrictEqual(user().minutes.slice(-2).map((e) => [e.day, e.words]), [[daysAgo(1), 1], [L.dayKey(), 1]], 'otro día se cuenta aparte');
+  patch((u) => { u.minutes.splice(before); u.dose = null; for (const c of Object.values(u.deck)) c.due = L.dayKey(); });
   await tap('mi'); assert(/^Repaso 1 de 7: \S+\n\nDecila en voz alta\.$/.test(last.text), last.text); assert.deepStrictEqual(labels(), ['Salió bien', 'Me costó']);
   const first = last.text.split('\n')[0].split(': ')[1];
   await tap('mg:n'); for (let i = 0; i < 6; i++) await tap('mg:s');
   assert(/repasaste 7\. Salieron bien: 6\. Te costaron: 1/.test(last.text) && last.text.endsWith(`Para repetir mañana:\n· ${first}`), last.text);
   assert.strictEqual(user().minutes.length, before + 1, 'el repaso cuenta como práctica');
+  await tap('m'); assert(/Hoy ya repasaste 7 palabras\.\nSi querés, seguí con otras 7\./.test(last.text), last.text);
+  assert.deepStrictEqual(labels(), ['▶ Seguir repasando', 'Agregar mis palabras', 'Más']);
   await tap('mad'); await msg('El perro de  Rosa'); assert(/Agregada: El perro de Rosa/.test(last.text));
   const size = Object.keys(user().deck).length;
-  await tap('mad'); await msg('enrique'); assert(/Agregada: Enrique$/.test(last.text) && Object.keys(user().deck).length === size, 'no duplica por mayúsculas');
+  await tap('mad'); await msg('enrique'); assert(/^Enrique ya estaba en tu lista\. La sumo al repaso de hoy\.$/.test(last.text) && Object.keys(user().deck).length === size && user().deck.Enrique.due === L.dayKey(), 'no duplica por mayúsculas');
   patch((u) => { for (const [w, c] of Object.entries(u.deck)) c.due = w === 'El perro de Rosa' ? daysAgo(1) : L.addDays(L.dayKey(), 5); });
   await tap('mi'); assert(/Repaso 1 de 1: El perro de Rosa\n/.test(last.text) && !/·/.test(last.text), last.text);
-  await tap('mg:s'); assert(/Te costaron: 0\./.test(last.text) && !/repetir/.test(last.text)); await tap('m'); assert(/no quedan palabras/.test(last.text) && !labels().includes('▶ Repasar'));
+  await tap('mg:s'); assert(/Te costaron: 0\./.test(last.text) && !/repetir/.test(last.text)); await tap('m'); assert(/no quedan palabras/.test(last.text) && !labels().some((t) => /Repasar|repasando/.test(t)), last.text);
+  patch((u) => { u.deck.Enrique.due = daysAgo(1); });
+  await tap('m'); assert(/Hoy ya repasaste 8 palabras\.\nSi querés, seguí con otra\./.test(last.text), last.text);
+  patch((u) => { u.deck.Enrique.due = L.addDays(L.dayKey(), 5); });
   await tap('mad'); await tap('m'); await msg('hola'); assert(/Usá los botones/.test(last.text), 'tocar un botón cancela lo que se esperaba escribir');
   await tap('mas'); assert(labels().includes('Cambiar a Aprender'));
   await tap('mo:a'); assert(/🟢 Aprender/.test(last.text));
@@ -178,11 +203,13 @@ const daysAgo = (n) => L.addDays(L.dayKey(), -n);
   const rapi = { send: async (c, s) => { sent.push({ c, s }); } };
   const to = (c) => sent.filter((m) => m.c == c);
   store.set(904, ru({ mode: 'aprender' }));
-  store.set(905, ru({ mode: 'mantener' }));
+  store.set(905, ru({ mode: 'mantener', deck: { Israel: { box: 0, due: '2026-03-01' } } }));
+  store.set(906, ru({ mode: 'mantener', deck: { Israel: { box: 2, due: '2026-04-01' } } }));
   await sendReminders(rapi, AR('2026-03-10T20:30:00'));
   assert.strictEqual(to(904).length, 1);
   assert(/Es la hora de ejercitar/.test(to(904)[0].s.text) && /ejercicio 1/.test(to(904)[0].s.text));
-  assert(/repasar tus palabras\./.test(to(905)[0].s.text));
+  assert(/repasar tus palabras\./.test(to(905)[0].s.text) && to(905)[0].s.kb[0][0].d === 'mi', 'Empezar abre el repaso');
+  assert.strictEqual(to(906).length, 0, 'sin palabras para hoy no avisa');
   await sendReminders(rapi, AR('2026-03-10T20:40:00'));
   assert.strictEqual(to(904).length, 1, 'no repite el mismo día');
   // cuando se acumulan 5 recordatorios ignorados (el 904 ya traía uno), avisa y se pausa solo
@@ -193,6 +220,8 @@ const daysAgo = (n) => L.addDays(L.dayKey(), -n);
   await sendReminders(rapi, AR('2026-03-15T20:30:00'));
   await sendReminders(rapi, AR('2026-03-16T20:30:00'));
   assert.strictEqual(to(904).length, 5, 'pausado: no manda más');
+
+  await msg('/start'); await tap('mo:m'); await tap('rm'); assert(/ejercitaste y tenés palabras para repasar\./.test(last.text), last.text);
 
   console.log('OK: flujo completo');
   require('fs').rmSync(process.env.BOT_DATA, { force: true });
