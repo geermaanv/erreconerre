@@ -95,8 +95,7 @@ h1 em{font-style:normal;color:var(--accent)}
 .shotimg{display:block;width:100%;height:auto;border-radius:20px;box-shadow:0 22px 40px -26px rgba(14,31,26,.55)}
 .mockbg{background:#a3bf94;border-radius:20px;padding:22px 18px;display:flex;justify-content:center;box-shadow:0 22px 40px -26px rgba(14,31,26,.55)}
 .tgmock{width:100%;max-width:330px;font-size:.7rem;line-height:1.35;color:#000}
-.tgmock .bb{color:#2f7d5b;letter-spacing:-.04em}
-.tgbubble{background:#fff;border-radius:14px;padding:10px 12px 8px;white-space:pre-line;margin-bottom:5px;position:relative}
+.tgbubble{background:#fff;border-radius:14px;padding:10px 12px 8px;white-space:pre-wrap;margin-bottom:5px;position:relative}
 .tgtime{display:block;text-align:right;color:#8a8a8a;font-size:.62rem;margin-top:2px}
 .tgrow{display:flex;gap:5px;margin-top:5px}
 .tgrow span{flex:1;text-align:center;background:rgba(80,120,70,.62);color:#fff;border-radius:9px;padding:7px 4px;font-size:.74rem}
@@ -175,7 +174,8 @@ footer a{color:#fff;font-weight:600;text-underline-offset:4px}
     <div class="cta">
       <a class="btn" href="https://t.me/mesalio_la_r_bot">Empezar en Telegram</a>
     </div>
-    <p class="micro">Abrís @mesalio_la_r_bot y empezás. No hace falta registrarse en nada más.</p>
+    <p class="micro">Es un chat automático dentro de Telegram, una app de mensajes parecida a WhatsApp: te muestra el ejercicio del día y respondés tocando botones.</p>
+    <p class="micro" style="margin-top:10px">Abrís @mesalio_la_r_bot y empezás. No hace falta registrarse en nada más.</p>
     <p class="micro" style="margin-top:10px"><a class="alt" href="#guia">¿Nunca usaste Telegram? Te explico paso a paso</a></p>
   </div>
 </section>
@@ -201,10 +201,10 @@ footer a{color:#fff;font-weight:600;text-underline-offset:4px}
       <h2>Cómo funciona</h2>
     </div>
     <ol class="steps">
-      <li><strong>Hacés un test de dos preguntas.</strong><span>Te asigna un punto de partida según cómo te sale hoy el sonido.</span></li>
-      <li><strong>Hacés el ejercicio del día.</strong><span>Cada sesión tiene un objetivo claro, teoría breve y una indicación distinta.</span></li>
-      <li><strong>Marcás cómo te fue.</strong><span>El bot lleva la cuenta, te propone volver a pasos anteriores si hace falta y te muestra tu progreso.</span></li>
-      <li><strong>Mantenés lo logrado.</strong><span>Cuando te sale, pasás a palabras y frases con un calendario de repaso.</span></li>
+      <li><strong>Elegís tu objetivo.</strong><span>Aprender la «rr», o practicarla para ganar precisión y soltura.</span></li>
+      <li><strong>Hacés el ejercicio del día.</strong><span>La lista queda en pantalla mientras practicás, con una sola cosa en qué fijarte.</span></li>
+      <li><strong>Respondés una sola pregunta.</strong><span>¿La R vibró? El bot lleva la cuenta y, si se traba, te muestra otros caminos.</span></li>
+      <li><strong>Practicás lo logrado.</strong><span>Repasás las palabras que se te traban y agregás las tuyas.</span></li>
     </ol>
   </div>
 </section>
@@ -220,59 +220,57 @@ footer a{color:#fff;font-weight:600;text-underline-offset:4px}
   <div class="wrap">
     <div class="shots">
       <figure class="shot">
-        <img class="shotimg" src="img/como-funciona.png" alt="Pantalla del bot que explica cómo funciona la R que vibra, con botones Siguiente y Saltar" loading="lazy" width="900">
-        <figcaption><strong>Primero entendés cómo funciona</strong>Cinco pantallas cortas explican qué hace la lengua en la R que vibra, antes de practicar.</figcaption>
-      </figure>
-      <figure class="shot">
-        <img class="shotimg" src="img/test.png" alt="Pantalla del bot con la pregunta del test inicial y cinco botones de respuesta" loading="lazy" width="900">
-        <figcaption><strong>Un test para saber por dónde empezar</strong>Una pregunta sobre cómo te sale hoy la R, sin diagnóstico y con opción de saltarla.</figcaption>
-      </figure>
-      <figure class="shot">
-        <img class="shotimg" src="img/menu-hoy.png" alt="Menú del bot con la práctica de hoy, su objetivo y las nueve prácticas" loading="lazy" width="900">
-        <figcaption><strong>Cada día, una sola cosa para hacer</strong>La práctica de hoy con su objetivo, y las nueve prácticas siempre abiertas.</figcaption>
-      </figure>
-      <figure class="shot">
-        <img class="shotimg" src="img/practica.png" alt="Pantalla de la práctica 1 del bot con sílabas para repetir y botones Empecé, Ver teoría, Modo memoria y Si no sale" loading="lazy" width="900">
-        <figcaption><strong>Una línea, varias veces, lento</strong>Cada práctica trae sus sílabas listas para repetir, con teoría y modo memoria a un toque.</figcaption>
-      </figure>
-      <figure class="shot">
-        <img class="shotimg" src="img/si-no-sale.png" alt="Pantalla del bot con una ruta alternativa para conseguir el sonido, con pasos numerados y botones para pasar a la siguiente" loading="lazy" width="900">
-        <figcaption><strong>Si un paso no sale, hay otro camino</strong>Rutas distintas al mismo sonido: probás una varios días y, si no funciona, pasás a la siguiente.</figcaption>
-      </figure>
-      <figure class="shot">
-        <div class="mockbg"><div class="tgmock" role="img" aria-label="Recreación de la pantalla Mi progreso del bot, con datos de ejemplo: total de minutos, racha, minutos por semana y prácticas superadas">
-          <div class="tgbubble">Mi progreso
+        <div class="mockbg"><div class="tgmock" role="img" aria-label="Recreación del inicio del modo Aprender, con la práctica de hoy y los minutos">
+          <div class="tgbubble">🟢 Aprender
 
-⏱ Total: 3 h 20 min
-🔥 Racha: 5 días
-📅 Últimos 7 días: 4 de 5 practicados
-●●●●○
-
-Minutos por semana
-Esta semana
-<span class="bb">██████████</span>  85 min
-Semana pasada
-<span class="bb">████████░░</span>  70 min
-Hace 2 semanas
-<span class="bb">█████░░░░░</span>  45 min
-
-Prácticas
-✅1   ✅2   ▶️3   ⚪4   ⚪5
-⚪6   ⚪7   ⚪8   ⚪9
-✅ superada: salió en 3 días distintos
-
-Habla: escalón 1 de 5<span class="tgtime">23:12</span></div>
-          <div class="tgrow"><span>Mis hitos</span><span>Notas</span></div>
-          <div class="tgrow"><span>Menú</span></div>
+Práctica 3 de 9 · Unión
+Llevás 45 min.<span class="tgtime">20:15</span></div>
+          <div class="tgrow"><span>▶ Empezar ejercicio</span></div>
+          <div class="tgrow"><span>Más</span></div>
         </div></div>
-        <figcaption><strong>Ves cuánto practicaste</strong>Minutos, racha, prácticas superadas, hitos y notas propias.</figcaption>
+        <figcaption><strong>Cada día, una sola cosa para hacer</strong>La práctica que te toca y cuánto llevás practicado.</figcaption>
       </figure>
       <figure class="shot">
-        <img class="shotimg" src="img/ajustes.png" alt="Pantalla de ajustes del bot con opciones para exportar o borrar datos y llevar un resumen a la consulta" loading="lazy" width="900">
-        <figcaption><strong>Tus datos y tu consulta, a mano</strong>Exportá o borrá tus datos cuando quieras y llevá un resumen a un fonoaudiólogo.</figcaption>
+        <div class="mockbg"><div class="tgmock" role="img" aria-label="Recreación del ejercicio de la práctica 3, con los botones Terminé y Ayuda">
+          <div class="tgbubble">Práctica 3 · Unión
+
+Hoy fijate solo en que cada mitad salga bien, sin importar la pausa.
+
+ar · ra      er · re      ir · ri
+or · ro      ur · ru
+
+Después, unidas:
+arra   erre   irri   orro   urru
+
+Y una palabra:
+ar · roz   →   arroz
+
+Una línea, varias veces, lento. Cuando termines, tocá Terminé.<span class="tgtime">20:15</span></div>
+          <div class="tgrow"><span>Terminé</span></div>
+          <div class="tgrow"><span>Ayuda</span></div>
+        </div></div>
+        <figcaption><strong>La lista queda a la vista</strong>Una indicación para fijarte, las sílabas para repetir y la ayuda a un toque.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="mockbg"><div class="tgmock" role="img" aria-label="Recreación de la pregunta al terminar: si la R vibró">
+          <div class="tgbubble">5 min anotados. ¿La R vibró? (más de un golpe seguido)<span class="tgtime">20:15</span></div>
+          <div class="tgrow"><span>Sí, vibró</span><span>Todavía no</span></div>
+        </div></div>
+        <figcaption><strong>Una sola pregunta al terminar</strong>Decís si la R vibró y el bot lleva la cuenta.</figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="mockbg"><div class="tgmock" role="img" aria-label="Recreación del repaso de palabras del modo Practicar">
+          <div class="tgbubble">Palabra 1 de 7
+
+Decila en voz alta.
+
+en · ri → en · rique → enrique<span class="tgtime">20:15</span></div>
+          <div class="tgrow"><span>Bien</span><span>Se trabó</span></div>
+        </div></div>
+        <figcaption><strong>Repasás las palabras que se traban</strong>Primero separadas y después enteras. También podés agregar las tuyas.</figcaption>
       </figure>
     </div>
-    <p class="small shots-note">Capturas reales del bot. La pantalla de progreso es una recreación con datos de ejemplo.</p>
+    <p class="small shots-note">Pantallas recreadas con los textos del bot y datos de ejemplo.</p>
   </div>
 </section>
 
