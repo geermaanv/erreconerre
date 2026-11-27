@@ -1,6 +1,6 @@
 # Bot de Telegram (prototipo)
 
-Prototipo sin dependencias (Node 18 o superior). Implementa el método v1.3 (`docs/metodo-v1.md`) con un menú simplificado en dos circuitos: Aprender y Mantener.
+Prototipo sin dependencias (Node 18 o superior). Implementa el método v1.3 (`docs/metodo-v1.md`) con un menú simplificado en dos circuitos: Aprender y Practicar.
 
 ## Cómo correrlo
 
@@ -30,37 +30,34 @@ Variables opcionales:
 node bot/test.js
 ```
 
-Simula Telegram sin red y sin token. Cubre los dos circuitos, que el ejercicio quede a la vista, el avance entre prácticas, repaso de palabras, uso al hablar, personas que venían del menú anterior, datos y recordatorios.
+Simula Telegram sin red y sin token. Cubre los dos circuitos, que el ejercicio quede a la vista, el avance entre prácticas, el repaso de palabras, personas que venían de menús anteriores, datos y recordatorios.
 
-## Qué incluye el prototipo
+## Qué incluye (versión mínima)
 
-Al empezar pregunta en qué está la persona. Son dos circuitos separados, y se cambia desde "Más".
+Al empezar pregunta el objetivo. Son dos circuitos y se cambia desde "Más".
 
-**Aprender** (nueve prácticas)
+**Aprender** (nueve prácticas, en orden)
 
-- Una pregunta sobre la R de "pero" define el punto de partida.
-- Inicio: "Practicar", "Practicar sin mirar el teléfono", "Mi avance" y "Más".
-- El mensaje del ejercicio queda siempre a la vista. Botones: "Terminé", "Cómo se hace" y "No me sale" (las ayudas llegan en mensajes aparte). La primera vez de cada práctica, la explicación llega antes del ejercicio.
-- El tiempo corre desde "Practicar", con un tope de 30 minutos por sesión.
-- Al terminar hay una sola pregunta: "¿La R vibró?". Una práctica se supera cuando vibra en 3 días distintos. Al completar las nueve, propone pasar a Mantener.
-- Tras 3 "Todavía no" seguidos sugiere otra forma o la práctica anterior. Aviso de consulta tras 12 sesiones o 4 semanas en las prácticas 1 a 3 sin éxito, después de probar rutas.
+- Inicio: práctica de hoy, minutos, "Empezar ejercicio" y "Más".
+- El mensaje del ejercicio queda siempre a la vista. Botones: "Terminé" y "Ayuda" (cómo se hace y, en las prácticas 1 a 4, otros caminos al sonido; llega en un mensaje aparte). La primera vez de cada práctica, la explicación llega antes del ejercicio.
+- El tiempo corre desde "Empezar ejercicio", con un tope de 30 minutos por sesión.
+- Al terminar hay una sola pregunta: "¿La R vibró?". Una práctica se supera cuando vibra en 3 días distintos. Al completar las nueve, propone pasar a Practicar.
+- Aviso de consulta tras 12 sesiones o 4 semanas en las prácticas 1 a 3 sin que vibre nunca.
 
-**Mantener**
+**Practicar** (en el código, modo `mantener`)
 
-- Repaso de palabras y frases con intervalos de 1, 2, 4, 8 y 16 días ("Bien" o "Se trabó"). El repaso suma minutos.
-- "Usarla al hablar": escalera de 5 pasos. Sugiere subir tras 5 días sin trabas en una semana.
+- Repaso de palabras y frases con intervalos de 1, 2, 4, 8 y 16 días. La palabra se muestra entera ("Salió bien" o "Me costó") y al final se listan las que costaron. El repaso suma minutos.
 - La persona agrega las palabras que se le traban.
 
-**Más:** cambiar de circuito, recordatorio diario, cómo funciona (2 pantallas), consultar a un fonoaudiólogo (con resumen para llevar) y mis datos (exportar y borrar).
+**Más:** recordatorio diario, cambiar de circuito y mis datos (exportar y borrar).
 
 **Recordatorio diario** (opcional): una vez por día, a la hora que elija la persona, solo si todavía no practicó. Empieza al día siguiente y se pausa solo después de 5 días sin practicar. Necesita que el bot esté corriendo todo el día.
 
 ## Qué falta o difiere del método
 
-Este menú simplificado ya no incluye varias cosas de `docs/metodo-v1.md` y `docs/pantallas-bot.md`: conteo de 5 intentos, hitos marcados a mano, notas, práctica libre y comunidad.
+Esta versión no incluye varias cosas de `docs/metodo-v1.md` y `docs/pantallas-bot.md`: perfiles según el sonido, elegir práctica, practicar de memoria y cargar minutos, uso al hablar, conteo de intentos, hitos, notas, práctica libre y comunidad. Una versión con parte de eso está en el commit `9e17cf9`.
 
 - No hay audio: la escucha es con pares para leer y grabándose con el teléfono.
-- Los minutos cargados a mano no piden respuesta.
 - La exportación de datos falla si son muy largos.
 - Los textos son propuestas y los tiene que revisar el autor del método.
 - El estado se guarda en un archivo local. No es adecuado para producción.

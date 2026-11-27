@@ -8,6 +8,7 @@ Cada parte lleva una etiqueta de confianza:
 
 - **[recordado]**: lo contó el autor.
 - **[inferido]**: deducido del orden de su lista de palabras (`Lista_de_Palabras.pdf`).
+- **[confirmado]**: el autor lo revisó y lo dio por bueno (2026-11-27).
 - **[propuesta]**: lo agregó el equipo de diseño para decidir. Hay que revisarlo.
 - **[por validar]**: depende de probarlo con usuarios reales.
 
@@ -62,12 +63,12 @@ Los minutos son orientativos. [propuesta]
 | 1 | Sílabas que cierran con R | `ar er ir or ur`, pronunciando la R con el aire pasando por la lengua | 10 | recordado |
 | 2 | Sílabas que abren con R | `ra re ri ro ru` | 10 | recordado |
 | 3 | Unión | `arra erre irri orro urru`, con pausa mínima entre mitades; luego `arroz` | 10 | recordado (el paso intermedio y `arra` ~ `arroz`) |
-| 4 | Cadenas de sílabas | `LA rra rro rru rre rri`, `RA la lo lu le li`, `NA rra…`, `RA na no…` | 10 | inferido |
-| 5 | Palabras con RR, separadas | `ar · roz`, `car · ro`, acortando la pausa hasta unirlas | 15 | recordado (arroz) / inferido (resto de la lista) |
-| 6 | N, L, S + R | `en · redar`, `al · rededor`, `Is · rael`, `des · rabe` | 15 | inferido |
-| 7 | Palabras con R inicial | `rama`, `rojo`, `ritual` | 10 | inferido |
-| 8 | Frases cortas | grupos de tres frases | 15 | inferido |
-| 9 | Poemas y trabalenguas | textos largos | 15 | inferido |
+| 4 | Cadenas de sílabas | `LA rra rro rru rre rri`, `RA la lo lu le li`, `NA rra…`, `RA na no…` | 10 | confirmado |
+| 5 | Palabras con RR, separadas | `ar · roz`, `car · ro`, acortando la pausa hasta unirlas | 15 | recordado (arroz) / confirmado (resto de la lista) |
+| 6 | N, L, S + R | `en · redar`, `al · rededor`, `Is · rael`, `des · rabe` | 15 | confirmado |
+| 7 | Palabras con R inicial | `rama`, `rojo`, `ritual` | 10 | confirmado |
+| 8 | Frases cortas | grupos de tres frases | 15 | confirmado |
+| 9 | Poemas y trabalenguas | textos largos | 15 | confirmado |
 
 Notas:
 

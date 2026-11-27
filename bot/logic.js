@@ -6,9 +6,9 @@ function addDays(key, n) { const d = new Date(key + 'T12:00:00Z'); d.setUTCDate(
 function fmtMin(total) { const h = Math.floor(total / 60), m = total % 60; return h ? `${h} h ${m} min` : `${m} min`; }
 
 const newUser = () => ({
-  mode: null, start: 1, testDone: false, perfil: null, minutes: [], ratings: [], hitos: {}, notes: [],
+  mode: null, start: 1, testDone: false, minutes: [], ratings: [],
   deck: null, dose: null, session: null, pending: null, awaiting: null,
-  flags: {}, rutas: [], fase2: 0,
+  flags: {},
   rem: { on: false, hour: 20, last: null, ignored: 0 },
 });
 
@@ -61,10 +61,10 @@ const hasHistory = (u, p) => u.ratings.some((r) => r.practice === p) || u.minute
 
 const guidedSessions = (u) => u.ratings.length;
 
-// Derivación: 12 sesiones o 4 semanas en las prácticas 1 a 3 sin ningún "Salió", después de probar rutas alternativas.
+// Derivación: 12 sesiones o 4 semanas en las prácticas 1 a 3 sin que la R vibre ninguna vez.
 function derivacion(u, today) {
   const r = u.ratings.filter((x) => x.practice >= 1 && x.practice <= 3);
-  if (!r.length || r.some(salioOk) || !u.rutas.length) return false;
+  if (!r.length || r.some(salioOk)) return false;
   const first = r.map((x) => x.day).sort()[0];
   return r.length >= 12 || first <= addDays(today, -28);
 }
