@@ -1,6 +1,6 @@
 # Bot de Telegram (prototipo)
 
-Prototipo sin dependencias (Node 18 o superior). Implementa el método v1.3 (`docs/metodo-v1.md`) sobre las pantallas de `docs/pantallas-bot.md`.
+Prototipo sin dependencias (Node 18 o superior). Implementa el método v1.3 (`docs/metodo-v1.md`) con un menú simplificado en dos circuitos: Aprender y Mantener.
 
 ## Cómo correrlo
 
@@ -21,7 +21,6 @@ Variables opcionales:
 
 | Variable | Para qué |
 |---|---|
-| `COMMUNITY_URL` | Enlace de invitación al grupo (botón Comunidad). |
 | `BOT_TZ` | Zona horaria (por defecto `America/Argentina/Buenos_Aires`). |
 | `BOT_DATA` | Ruta del archivo de estado (por defecto `bot/data/state.json`, ignorado por git). |
 
@@ -31,29 +30,38 @@ Variables opcionales:
 node bot/test.js
 ```
 
-Simula Telegram sin red y sin token. Cubre el flujo completo: introducción, test de dos preguntas y perfiles, teoría por páginas, modo memoria, escucha, conteo de 5 intentos, pregunta de control, avance de la práctica de hoy, rutas alternativas, preparación, Habla, consulta, hitos, notas, mantenimiento con frases, exportar y borrar.
+Simula Telegram sin red y sin token. Cubre los dos circuitos, que el ejercicio quede a la vista, el avance entre prácticas, repaso de palabras, uso al hablar, personas que venían del menú anterior, datos y recordatorios.
 
 ## Qué incluye el prototipo
 
-- **Introducción** de 5 pantallas: qué es la R múltiple, el método de separar, cómo es una sesión, cómo se mide y cuándo consultar.
-- **Test de dos preguntas** que asigna un perfil (R simple, gutural, sustitución, sin R simple o intermitente) y explica el punto de partida.
-- **Menú 3 por 3** con la práctica de hoy (▶) y su objetivo.
-- **Cada práctica** tiene teoría por páginas (por qué, cómo, en qué fijarte), lista paginada con separación de la doble R, modo memoria y una indicación distinta por sesión.
-- **Presentación progresiva:** "Preparación" aparece desde la segunda sesión; "Si no sale" (rutas alternativas según el perfil), tras 3 "No salió" o desde el inicio para los perfiles sin R simple o con sustitución; "Escucha", desde la práctica 5.
-- **Sesión:** conteo opcional de 5 intentos (4 de 5 para avanzar), pregunta de control antes de calificar (un "Salió" con un solo golpe no cuenta para superar), sugerencia de grabarse tras el primer "Salió".
-- **Derivación:** aviso tras 12 sesiones o 4 semanas en las prácticas 1 a 3 sin "Salió", después de probar las rutas. En Ajustes: "Cuándo consultar", "Qué llevar a la consulta" (resumen generado) y "Seguridad".
-- **Habla** (fase 2): escalera de 5 escalones de presión.
-- **Mantenimiento** con escalera de 1, 2, 4, 8 y 16 días, palabras y frases. Se abre con el hito "En frases" estable, con el test, o a pedido.
-- **Recordatorio diario** opcional (Ajustes → Recordatorio): una vez por día, a la hora que elija la persona, solo si todavía no practicó. Empieza al día siguiente de activarlo y se pausa solo después de 5 días sin practicar. Necesita que el bot esté corriendo todo el día.
-- Práctica libre, progreso, hitos, notas, comunidad, exportar y borrar.
+Al empezar pregunta en qué está la persona. Son dos circuitos separados, y se cambia desde "Más".
+
+**Aprender** (nueve prácticas)
+
+- Una pregunta sobre la R de "pero" define el punto de partida.
+- Inicio: "Practicar", "Practicar sin mirar el teléfono", "Mi avance" y "Más".
+- El mensaje del ejercicio queda siempre a la vista. Botones: "Terminé", "Cómo se hace" y "No me sale" (las ayudas llegan en mensajes aparte). La primera vez de cada práctica, la explicación llega antes del ejercicio.
+- El tiempo corre desde "Practicar", con un tope de 30 minutos por sesión.
+- Al terminar hay una sola pregunta: "¿La R vibró?". Una práctica se supera cuando vibra en 3 días distintos. Al completar las nueve, propone pasar a Mantener.
+- Tras 3 "Todavía no" seguidos sugiere otra forma o la práctica anterior. Aviso de consulta tras 12 sesiones o 4 semanas en las prácticas 1 a 3 sin éxito, después de probar rutas.
+
+**Mantener**
+
+- Repaso de palabras y frases con intervalos de 1, 2, 4, 8 y 16 días ("Bien" o "Se trabó"). El repaso suma minutos.
+- "Usarla al hablar": escalera de 5 pasos. Sugiere subir tras 5 días sin trabas en una semana.
+- La persona agrega las palabras que se le traban.
+
+**Más:** cambiar de circuito, recordatorio diario, cómo funciona (2 pantallas), consultar a un fonoaudiólogo (con resumen para llevar) y mis datos (exportar y borrar).
+
+**Recordatorio diario** (opcional): una vez por día, a la hora que elija la persona, solo si todavía no practicó. Empieza al día siguiente y se pausa solo después de 5 días sin practicar. Necesita que el bot esté corriendo todo el día.
 
 ## Qué falta o difiere del método
 
-- No hay "Pausa" en el cronómetro.
+Este menú simplificado ya no incluye varias cosas de `docs/metodo-v1.md` y `docs/pantallas-bot.md`: conteo de 5 intentos, hitos marcados a mano, notas, práctica libre y comunidad.
+
 - No hay audio: la escucha es con pares para leer y grabándose con el teléfono.
-- Los minutos cargados a mano no piden calificación.
-- Habla se sube de escalón a mano. El bot sugiere subir tras 5 días con "Salió" en una semana.
-- La asociación entre prácticas e hitos para sugerir "Estable" cubre sílabas, palabras y frases.
+- Los minutos cargados a mano no piden respuesta.
+- La exportación de datos falla si son muy largos.
 - Los textos son propuestas y los tiene que revisar el autor del método.
 - El estado se guarda en un archivo local. No es adecuado para producción.
 

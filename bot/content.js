@@ -11,69 +11,48 @@ function intermediate(head, tail) {
   return m && m[0] !== tail ? `${head} · ${m[0]}` : null;
 }
 
+// "ar · ra → ar · roz → arroz": la lista muestra el camino completo, de separada a unida.
+function wordSteps(w) {
+  const parts = splitTrill(w);
+  if (!parts) return w;
+  const mid = intermediate(parts[0], parts[1]);
+  return `${mid ? `${mid} → ` : ''}${parts[0]} · ${parts[1]} → ${w}`;
+}
+
 // Una página por bloque. split: muestra la palabra partida antes de la R que vibra.
-function wordPages(blocks, split, sinSeparar) {
+function wordPages(blocks, split) {
   return blocks.map((b) => {
-    const rows = chunk(uniq(b.items), 3).map((row) => row.map((w) => {
-      const parts = split && !sinSeparar ? splitTrill(w) : null;
-      if (!parts) return w;
-      const mid = intermediate(parts[0], parts[1]);
-      return mid ? `${mid} → ${parts[0]} · ${parts[1]}` : `${parts[0]} · ${parts[1]}`;
-    }));
-    const body = split && !sinSeparar ? rows.flat().join('\n') : rows.map((r) => r.join('   ')).join('\n');
+    const items = uniq(b.items);
+    const body = split ? items.map(wordSteps).join('\n') : chunk(items, 3).map((row) => row.join('   ')).join('\n');
     return `${b.title || ''}\n\n${body}`.trim();
   });
 }
 const lines = (b) => b.items.join('\n');
 
-// ---------- Introducción ----------
+// ---------- Cómo funciona ----------
 const INTRO = [
-  'Cómo funciona (1/5) · La R que vibra\n\n' +
-  'La R de "perro" es la más difícil del castellano. No es una R más fuerte: es la punta de la lengua golpeando varias veces seguidas detrás de los dientes de arriba, empujada por el aire.\n\n' +
-  'Por eso no sale "haciendo fuerza" con la lengua. La lengua va relajada y la vibración la hace el aire.',
-  'Cómo funciona (2/5) · El método\n\n' +
-  'Si intentás decir "arroz" de corrido, lo más probable es que no salga. El método hace lo contrario: separar.\n\n' +
+  'Cómo funciona (1/2) · La R que vibra\n\n' +
+  'La R de "perro" no es una R más fuerte: es la punta de la lengua golpeando varias veces seguidas detrás de los dientes de arriba, empujada por el aire. La lengua va relajada.\n\n' +
+  'El método es separar. "Arroz" de corrido no sale al principio, así que se corta justo antes de la R que vibra:\n\n' +
   '  ar · roz\n\n' +
-  'Primero practicás cada mitad por separado. Después las decís con una pausa corta, y la vas achicando hasta que se unen. Así no te trabás: cada parte es fácil por sí sola.\n\n' +
-  'El camino tiene 9 prácticas: de sílabas sueltas a palabras, frases y textos.',
-  'Cómo funciona (3/5) · Una sesión\n\n' +
-  '· Leés una explicación corta (solo la primera vez).\n' +
-  '· Tocás "Empecé" y practicás en voz alta con la lista.\n' +
-  '· Te doy una sola cosa en qué fijarte por sesión. Más indicaciones juntas suelen empeorar el resultado.\n' +
-  '· Primero lento. Acelerás solo cuando sale bien despacio.\n' +
-  '· Al terminar, me contás cómo te fue.\n\n' +
-  'Cinco minutos cuentan. Lo que más ayuda es practicar seguido.',
-  'Cómo funciona (4/5) · Cómo medimos\n\n' +
-  '· Minutos: es lo principal. Sumá horas de vuelo.\n' +
-  '· La práctica de hoy (▶): te la propongo según cómo te va. Todas las demás están abiertas siempre.\n' +
-  '· Una práctica queda superada cuando sale en 3 días distintos.\n' +
-  '· Hitos: los marcás vos cuando algo sale por primera vez y cuando es estable (5 días distintos en una semana).\n\n' +
-  'No hay niveles ni puntajes.',
-  'Cómo funciona (5/5) · Antes de empezar\n\n' +
-  '· Esto no reemplaza a un fonoaudiólogo. Si la R se reemplaza siempre por otro sonido, conviene una evaluación. Te aviso si veo señales.\n' +
-  '· No uses el bot mientras manejás. Hay un modo "de memoria" para practicar sin mirar el teléfono.\n' +
-  '· Guardo tus minutos y avances para seguirte. Los borrás cuando quieras con /borrar.',
+  'Primero cada mitad, después con una pausa corta que se va achicando.',
+  'Cómo funciona (2/2) · Cómo se practica\n\n' +
+  '· Tocás "Practicar" y te aparece el ejercicio, con una sola cosa en qué fijarte.\n' +
+  '· Al terminar tocás "Terminé" y respondés una sola pregunta.\n' +
+  '· Una práctica se supera cuando vibra en 3 días distintos. Son 9, de sílabas a textos.\n' +
+  '· Cinco minutos cuentan. Lo que más ayuda es practicar seguido.\n\n' +
+  'Cuidate: si te mareás al soplar, frená y respirá normal. Si duele la lengua o la mandíbula, cortá. No uses el teléfono manejando.\n\n' +
+  'Esto no reemplaza a un fonoaudiólogo.',
 ];
 
-// ---------- Test inicial y perfiles ----------
-const TEST1 = {
-  q: 'Decí "perro" en voz alta, dos o tres veces. ¿Cómo te sale la R?',
-  a: [
-    ['Suena como "pero" (un solo golpe)', 'simple'],
-    ['Vibra en la garganta, "a la francesa"', 'gutural'],
-    ['Suena como una "y", una "l" u otro sonido', 'sustitucion'],
-    ['Tampoco me sale la R de "pero"', 'sinsimple'],
-    ['A veces sale bien', 'intermitente'],
-  ],
+// ---------- Inicio: modo y punto de partida ----------
+const MODO = {
+  q: '¿En qué estás?\n\n· Aprender: todavía no te sale la R de "perro", o te sale solo a veces.\n· Mantener: ya te sale y querés que no se te trabe.',
+  aprender: 'Estoy aprendiendo la R', mantener: 'Ya me sale: quiero mantenerla',
 };
-const TEST2 = {
-  q: '¿Dónde te falla?',
-  a: [
-    ['En "arra" o "arroz"', 3],
-    ['En algunas palabras ("Israel", "enredar")', 6],
-    ['En frases o cuando hablo rápido', 8],
-    ['Cuando estoy nervioso o con gente', 'fase2'],
-  ],
+const PARTIDA = {
+  q: 'Decí "pero" en voz alta. ¿Te sale esa R, la de un solo golpe?',
+  a: [['Sí', 'simple'], ['No, o suena como otra letra', 'sinsimple'], ['Me vibra en la garganta', 'gutural']],
 };
 
 // rutas: orden en que se ofrecen las rutas alternativas
@@ -83,14 +62,14 @@ const PERFILES = {
   gutural: { name: 'R gutural', rutas: [1, 2, 3, 4, 5, 0],
     texto: 'Tu R vibra atrás, en la garganta. El trabajo es llevar la vibración adelante, a la punta de la lengua.\n\nDos reglas para vos: no empujes con más aire (refuerza la vibración de atrás) y andá lento. Cuando aceleres, la garganta va a querer volver; es normal.' },
   sustitucion: { name: 'R reemplazada por otro sonido', rutas: [0, 1, 2, 3, 4, 5],
-    texto: 'Cuando la R se reemplaza siempre por otro sonido, conviene una evaluación con un fonoaudiólogo. En algunas personas influye la forma de la boca, y ahí puede hacer falta también un ortodoncista o un cirujano maxilofacial.\n\nPodés practicar igual mientras tanto. En Ajustes está "Qué llevar a la consulta".' },
+    texto: 'Cuando la R se reemplaza siempre por otro sonido, conviene una evaluación con un fonoaudiólogo. En algunas personas influye la forma de la boca, y ahí puede hacer falta también un ortodoncista o un cirujano maxilofacial.\n\nPodés practicar igual mientras tanto. En "Más" → "Consultar a un fonoaudiólogo" hay un resumen para llevar.' },
   sinsimple: { name: 'Sin R simple', rutas: [0, 1, 2, 3, 4, 5],
-    texto: 'Primero vamos a conseguir la R simple (la de "pero"), que es la base de la R que vibra. Para eso está la ruta 0, en el botón "Si no sale".\n\nSi hace tiempo que no sale ningún sonido de R, conviene una evaluación con un fonoaudiólogo. Podés practicar igual.' },
+    texto: 'Primero vamos a conseguir la R simple (la de "pero"), que es la base de la R que vibra. Para eso está la ruta 0: en el ejercicio, tocá "No me sale".\n\nSi la R se reemplaza siempre por otro sonido, o hace tiempo que no sale ninguno, conviene una evaluación con un fonoaudiólogo. En algunas personas influye la forma de la boca. Podés practicar igual mientras tanto.' },
   intermitente: { name: 'Sale a veces', rutas: [5, 3, 4, 1, 2, 0],
     texto: 'Ya la tenés. El trabajo ahora es que salga siempre: en las palabras que se traban y cuando hablás rápido o con presión.' },
 };
 
-// ---------- Rutas alternativas ("Si no sale") ----------
+// ---------- Rutas alternativas ("No me sale") ----------
 const RUTAS = [
   { n: 0, name: 'Ruta 0 · La R simple',
     texto: 'Para conseguir la R de "pero".\n\n1. Decí "de de de de" rápido, cada vez más rápido.\n2. Dejá que la d se ablande: "de-de-de" se va volviendo "dere-dere".\n3. Cuando suene como una R suave, probá: ara, ere, iri.\n4. Después: seré, seré, seré.\n\nNo busques todavía la vibración. Solo un golpe suave de la punta.' },
@@ -106,7 +85,14 @@ const RUTAS = [
     texto: 'En un estudio con un adulto, la R salió antes después de una s que entre vocales. Una explicación es que la s, que se dice sin voz, deja el aire en la presión justa para arrancar la vibración.\n\n1. des · ra, dis · ru, pos · ro\n2. La s bien suave y sin voz, la R pegada.\n3. Después: desregular, disruptivo, posromántico.\n\nEs una ruta para probar, no una regla: a algunas personas "Israel" les sigue costando.' },
 ];
 
-// ---------- Preparación, escucha, seguridad ----------
+// Para "No me sale" desde la práctica 5.
+const AYUDA_PALABRAS =
+  'No me sale\n\n' +
+  '1. Decila separada, con una pausa más larga.\n' +
+  '2. Si se traba, volvé un paso atrás: "ar · ra" antes de "ar · roz".\n' +
+  '3. Si sigue sin salir, volvé unos minutos a la práctica anterior.';
+
+// ---------- Preparación y escucha (van dentro de "Cómo se hace") ----------
 const PREPARACION =
   'Preparación (2 minutos, opcional)\n\n' +
   '1. Aire: tomá aire por la nariz y soltalo por la boca en un soplo largo y parejo. Tres veces como máximo.\n\n' +
@@ -115,17 +101,10 @@ const PREPARACION =
   'Si te mareás, frená y respirá normal.';
 
 const ESCUCHA =
-  'Escucha\n\n' +
-  'Escuchar la diferencia ayuda a producirla. Leé cada par en voz alta y notá qué cambia:\n\n' +
+  'Escuchar ayuda\n\n' +
+  'Notar la diferencia ayuda a producirla. Leé cada par en voz alta:\n\n' +
   '  pero / perro\n  caro / carro\n  coro / corro\n  para / parra\n  cero / cerro\n\n' +
-  'Grabate con el teléfono diciendo los pares y escuchate. ¿La segunda palabra tiene una vibración continua, o es un solo golpe?\n\n' +
-  'Si querés otra opinión, mandá la nota de voz al grupo de la comunidad.';
-
-const SEGURIDAD =
-  'Seguridad\n\n' +
-  '· Si al soplar te mareás, frená y respirá normal. No más de 3 soplos seguidos.\n' +
-  '· Si duele la mandíbula o la lengua, cortá la sesión.\n' +
-  '· No uses el bot manejando. Con el modo de memoria practicás con la vista en el camino y cargás los minutos después.';
+  'Grabate con el teléfono y escuchate. ¿La segunda palabra tiene una vibración continua, o es un solo golpe?';
 
 const CONSULTA =
   'Cuándo consultar\n\n' +
@@ -142,7 +121,7 @@ const FASE2 = [
   ['Leer grabándote', 'Lo mismo, pero grabándote. Después escuchá solo las R.'],
   ['Leerle a otra persona', 'Un párrafo en voz alta a alguien de confianza.'],
   ['Una llamada', 'Una llamada por día prestando atención a las R. No califiques el error: registralo y seguí.'],
-  ['Una reunión o charla', 'Una situación con presión real. Si se traba, no pasa nada: anotalo para el mantenimiento.'],
+  ['Una reunión o charla', 'Una situación con presión real. Si se traba, no pasa nada: agregá la palabra para repasarla.'],
 ];
 
 // ---------- Las 9 prácticas ----------
@@ -154,6 +133,7 @@ const PRACTICES = [
       'Por qué empezamos acá\n\nAl final de la sílaba la R no tiene que arrancar de golpe: llega después de la vocal, con el aire ya saliendo. Es el lugar más fácil para sentirla.',
       'Cómo\n\n1. Decí "a" y, sin cortar el aire, llevá la punta de la lengua detrás de los dientes de arriba: "ar".\n2. La lengua va apoyada y relajada. Los costados tocan las muelas de arriba.\n3. Dejá pasar el aire parejo, sin forzar, y alargá la R: "arrrr".\n4. Lo mismo con er, ir, or, ur.',
       'En qué fijarte\n\nLa R no la hace la lengua, la hace el aire. Si la lengua está tensa, no vibra.\n\nError común: empujar con fuerza. Más fuerza no da más vibración; da tensión.\n\nAlcanza con que al principio salga un golpe o dos. La vibración larga viene con la práctica.',
+      PREPARACION,
     ],
     cues: ['Hoy fijate solo en que la lengua esté floja.', 'Hoy fijate solo en que el aire salga parejo, sin empujar.', 'Hoy fijate solo en dónde apoya la punta: detrás de los dientes de arriba.'],
     pages: () => ['ar   er   ir   or   ur\n\nRepetí cada una varias veces, alargando la R:\n\narrr  arrr  arrr\nerrr  errr  errr\nirrr  irrr  irrr\norrr  orrr  orrr\nurrr  urrr  urrr\n\nDespués, encadenadas:\nererere   ararara   iririri   orororo   urururu'] },
@@ -162,7 +142,7 @@ const PRACTICES = [
     teoria: [
       'Qué cambia\n\nAhora la R va primero. Es más difícil que en "ar" porque tiene que arrancar sin una vocal que la prepare.',
       'Cómo\n\n1. Poné la lengua en posición antes de soltar el aire: punta detrás de los dientes de arriba, relajada.\n2. Soltá el aire y dejá que la punta vibre antes de abrir la vocal.\n3. Recién ahí, la vocal: "rra".\n4. Lo mismo con re, ri, ro, ru.',
-      'En qué fijarte\n\nLa lengua se prepara antes que el aire.\n\nSi no arranca, probá la vibración sola primero y agregá la vocal al final: "rrrra". Está en "Si no sale", ruta 4.',
+      'En qué fijarte\n\nLa lengua se prepara antes que el aire.\n\nSi no arranca, probá la vibración sola primero y agregá la vocal al final: "rrrra". En "No me sale" es la ruta 4.',
     ],
     cues: ['Hoy fijate solo en preparar la lengua antes de soltar el aire.', 'Hoy fijate solo en no cortar entre la R y la vocal.', 'Hoy fijate solo en ir lento.'],
     pages: () => ['ra   re   ri   ro   ru\n\nra ra ra ra\nre re re re\nri ri ri ri\nro ro ro ro\nru ru ru ru\n\nSi no arranca, primero la vibración sola:\nrrrra   rrrre   rrrri   rrrro   rrrru'] },
@@ -171,7 +151,7 @@ const PRACTICES = [
     teoria: [
       'El paso clave\n\nAcá unís lo que practicaste: la sílaba que cierra con R y la que abre con R.\n\n  ar + ra → arra\n  er + re → erre\n  ir + ri → irri\n\nEs la práctica más difícil del camino. Si se estanca, no es que estés haciendo algo mal.',
       'Cómo\n\n1. Decí "ar", pausa corta, "ra".\n2. Repetí varias veces con la misma pausa.\n3. Achicá la pausa de a poco, sin apurarte.\n4. Cuando se unan, ya es "arra".\n5. "Arra" y "arroz" se parecen: cuando sale una, sale la otra.',
-      'En qué fijarte\n\nLa pausa se achica sola cuando cada mitad sale bien. No la fuerces.\n\nUn ancla: "er + re" suena como "erre", el nombre de la letra.\n\nSi después de varios días no sale, en "Si no sale" hay otros caminos al mismo sonido.',
+      'En qué fijarte\n\nLa pausa se achica sola cuando cada mitad sale bien. No la fuerces.\n\nUn ancla: "er + re" suena como "erre", el nombre de la letra.\n\nSi después de varios días no sale, en "No me sale" hay otros caminos al mismo sonido.',
     ],
     cues: ['Hoy fijate solo en que cada mitad salga bien, sin importar la pausa.', 'Hoy fijate solo en achicar la pausa un poquito.', 'Hoy fijate solo en mantener el aire entre las dos mitades.'],
     extra: 'Indicación extra: además de levantar la punta, la parte de atrás de la lengua va un poco hacia atrás. Probalo en "arra".',
@@ -188,8 +168,8 @@ const PRACTICES = [
     objetivo: 'llevar la unión a palabras reales.',
     teoria: [
       'El método, en palabras\n\nNo intentes decir la palabra completa de corrido al principio: "arroz" de corrido no va a salir.\n\nCada palabra está cortada justo antes de la R que vibra, con un paso intermedio:\n\n  ar · ra → ar · roz',
-      'Cómo\n\n1. Decí el paso intermedio: "ar · ra".\n2. Después la palabra separada: "ar · roz".\n3. Achicá la pausa hasta unirla: "arroz".\n4. Si se traba, volvé un paso atrás.\n\nCuando ya salen, tocá "Ver sin separar" para leerlas enteras.',
-      'Escuchar ayuda\n\nNotar la diferencia entre "pero" y "perro" ayuda a producirla. Tenés pares para leer en el botón "Escucha".',
+      'Cómo\n\n1. Decí el paso intermedio: "ar · ra".\n2. Después la palabra separada: "ar · roz".\n3. Achicá la pausa hasta unirla: "arroz".\n4. Si se traba, volvé un paso atrás.\n\nCuando ya salen, leelas directo, sin separar.',
+      ESCUCHA,
     ],
     cues: ['Hoy fijate solo en el paso intermedio.', 'Hoy fijate solo en achicar la pausa.', 'Hoy probá leer sin separar las que ya salen.'],
     blocks: () => byTitle(/^RR \(|^Mezcla [12]$/) },
@@ -198,7 +178,7 @@ const PRACTICES = [
     teoria: [
       'Una regla que pocos saben\n\nDespués de n, l o s, la R siempre vibra, aunque se escriba con una sola:\n\n  en·redar   al·rededor   Is·rael   hon·ra\n\nSon las palabras que más cuestan, incluso a quienes ya tienen la R.',
       'Cómo\n\n1. Separá justo antes de la R: "en · redar".\n2. La primera mitad termina en n, l o s: decila suave, sin cortar el aire.\n3. La R arranca vibrando, como en "ra".\n4. Uní de a poco.',
-      'Un dato para probar\n\nEn un estudio con un adulto, la R salió antes después de una s que entre vocales. Probá si a vos te pasa: des·ra, pos·ro, dis·ru.\n\nA otras personas les pasa lo contrario: "Israel" les sigue costando. Las que se traben, agregalas a tu mazo de Mantenimiento.',
+      'Un dato para probar\n\nEn un estudio con un adulto, la R salió antes después de una s que entre vocales. Probá si a vos te pasa: des·ra, pos·ro, dis·ru.\n\nA otras personas les pasa lo contrario: "Israel" les sigue costando. Anotá las que se traben: en el modo Mantener podés agregarlas.',
     ],
     cues: ['Hoy fijate solo en no cortar el aire entre la n, l o s y la R.', 'Hoy fijate solo en las palabras con s.', 'Hoy fijate solo en las palabras con n.'],
     blocks: () => byTitle(/^N, L, S|^Mezcla 3$/) },
@@ -228,14 +208,14 @@ const PRACTICES = [
     pages: () => LESSONS.find((l) => l.id === 'textos').blocks[0].items },
 ];
 
-function pagesFor(n, sinSeparar) {
+function pagesFor(n) {
   const p = PRACTICES[n - 1];
-  return p.pages ? p.pages() : wordPages(p.blocks(), p.split, sinSeparar);
+  return p.pages ? p.pages() : wordPages(p.blocks(), p.split);
 }
 
 // Primeras líneas de una página, para el modo de memoria.
 function memoryLines(n, i) {
-  const page = pagesFor(n, false)[i] || '';
+  const page = pagesFor(n)[i] || '';
   const ls = page.split('\n').filter((l) => l.trim() && !/[:.]$/.test(l.trim()));
   return ([4, 5, 6, 7, 8].includes(n) ? ls.slice(1) : ls).slice(0, 5); // sin el título del bloque
 }
@@ -244,11 +224,5 @@ function seedDeck() {
   return uniq(byTitle(/^N, L, S/).flatMap((b) => b.items).map((w) => w.toLowerCase()));
 }
 
-const HITOS = [
-  ['simple', 'R simple'], ['aislada', 'R múltiple aislada'], ['silabas', 'R múltiple en sílabas'],
-  ['palabras', 'En palabras'], ['frases', 'En frases'], ['espontanea', 'En habla espontánea'],
-];
-const HITO_PRACTICAS = { silabas: [3, 4], palabras: [5, 6, 7], frases: [8, 9] };
-
-module.exports = { INTRO, TEST1, TEST2, PERFILES, RUTAS, PREPARACION, ESCUCHA, SEGURIDAD, CONSULTA, FASE2,
-  PRACTICES, pagesFor, memoryLines, seedDeck, HITOS, HITO_PRACTICAS, splitTrill };
+module.exports = { INTRO, MODO, PARTIDA, PERFILES, RUTAS, AYUDA_PALABRAS, CONSULTA, FASE2,
+  PRACTICES, pagesFor, wordSteps, memoryLines, seedDeck, splitTrill };

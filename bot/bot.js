@@ -1,11 +1,11 @@
 // Bot de Telegram (prototipo). Sin dependencias. Token por variable de entorno TELEGRAM_BOT_TOKEN.
+// Dos circuitos: "Aprender" (nueve prácticas) y "Mantener" (repaso de palabras y uso al hablar).
 const store = require('./store');
 const L = require('./logic');
 const C = require('./content');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const BASE = process.env.TELEGRAM_API_BASE || 'https://api.telegram.org';
-const COMMUNITY_URL = process.env.COMMUNITY_URL || '';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function tg(method, body = {}) {
@@ -17,7 +17,8 @@ async function tg(method, body = {}) {
   return j.result;
 }
 
-const kbJson = (kb) => ({ inline_keyboard: (kb || []).map((r) => r.map((b) => (b.url ? { text: b.t, url: b.url } : { text: b.t, callback_data: b.d }))) });
+// Sin botones no se manda reply_markup: al editar, eso quita los botones del mensaje.
+const kbJson = (kb) => (kb && kb.length ? { inline_keyboard: kb.map((r) => r.map((b) => ({ text: b.t, callback_data: b.d }))) } : undefined);
 const realApi = {
   answer: (id) => tg('answerCallbackQuery', { callback_query_id: id }).catch(() => {}),
   send: (chat, s) => tg('sendMessage', { chat_id: chat, text: s.text, reply_markup: kbJson(s.kb) }),
@@ -27,172 +28,261 @@ const realApi = {
   },
 };
 
-const B = (t, d) => ({ t, d });
-const MENU = [B('Menú', 'm')];
-const bar = (n, max, len = 10) => '█'.repeat(max ? Math.round((n / max) * len) : 0) + '░'.repeat(len - (max ? Math.round((n / max) * len) : 0));
-const dots = (n, max) => '●'.repeat(Math.min(n, max)) + '○'.repeat(Math.max(max - n, 0));
-
 // ---------- pantallas ----------
-const welcome = () => ({
-  text: 'Hola, soy Germán. Aprendí la R múltiple (la de "perro") a los 42 años y armé este entrenamiento para adultos.\n\nSe basa en un método simple: separar la doble R para que no te trabes, y practicar mucho, en ratos cortos.\n\nTe recomiendo leer "Cómo funciona" antes de empezar. Son cinco pantallas cortas.',
-  kb: [[B('Cómo funciona', 'in:0')], [B('Empezar ya', 'ts')]],
-});
+// Cada pantalla es { text, kb, fresh }. Por defecto reemplaza el mensaje tocado; con fresh se manda como mensaje nuevo.
+// Regla: el mensaje del ejercicio nunca se reemplaza por otra cosa.
+const B = (t, d) => ({ t, d });
+const HOME = [B('Volver', 'm')];
+const fresh = (s) => ({ ...s, fresh: true });
+const clamp = (i, t) => Math.max(0, Math.min(i, t - 1));
+const dots = (n, max) => '●'.repeat(Math.min(n, max)) + '○'.repeat(Math.max(max - n, 0));
+const practiceName = (n) => C.PRACTICES[n - 1].name;
+
+const modeScreen = (prefix = '') => ({ text: prefix + C.MODO.q, kb: [[B(C.MODO.aprender, 'mo:a')], [B(C.MODO.mantener, 'mo:m')]] });
+const welcome = () => modeScreen('Hola, soy Germán. Aprendí la R múltiple (la de "perro") a los 42 años y armé este entrenamiento para adultos.\n\nNo reemplaza a un fonoaudiólogo. Guardo tus minutos y avances; los podés borrar cuando quieras.\n\n');
+
 function intro(i) {
-  const t = C.INTRO.length; i = Math.max(0, Math.min(i, t - 1));
+  const t = C.INTRO.length; i = clamp(i, t);
   const nav = [];
   if (i > 0) nav.push(B('◀ Anterior', `in:${i - 1}`));
-  nav.push(i < t - 1 ? B('Siguiente ▶', `in:${i + 1}`) : B('Empezar', 'ts'));
-  return { text: C.INTRO[i], kb: [nav, [B('Saltar', 'ts')]] };
+  if (i < t - 1) nav.push(B('Siguiente ▶', `in:${i + 1}`));
+  return { text: C.INTRO[i], kb: [nav, HOME] };
 }
-const test1 = () => ({ text: `Una pregunta para saber por dónde empezar. No es un diagnóstico y podés cambiarla después.\n\n${C.TEST1.q}`, kb: [...C.TEST1.a.map(([t], i) => [B(t, `t1:${i}`)]), [B('Saltar: empiezo desde el principio', 't1:x')]] });
-const test2 = () => ({ text: C.TEST2.q, kb: C.TEST2.a.map(([t], i) => [B(t, `t2:${i}`)]) });
 
+const partidaScreen = () => ({ text: C.PARTIDA.q, kb: C.PARTIDA.a.map(([t, v]) => [B(t, `pf:${v}`)]) });
 function perfilScreen(u) {
-  const pf = C.PERFILES[u.perfil];
-  const where = u.fase2Start ? 'Empezamos por Habla, la etapa de llevar la R a situaciones reales.' : `Empezamos por la práctica ${u.start}: ${C.PRACTICES[u.start - 1].name.toLowerCase()}.`;
-  const extra = u.mantAbierto ? '\n\nMantenimiento ya está abierto para vos: ahí repasás las palabras que se traban.' : '';
-  return { text: `${pf ? `Tu punto de partida: ${pf.name}\n\n${pf.texto}\n\n` : ''}${where} Todas las demás prácticas están abiertas cuando quieras.${extra}`, kb: [[B('Ir al menú', 'm')]] };
+  const pf = C.PERFILES[u.perfil], h = L.hoy(u) || 1;
+  return { text: `${pf.name}\n\n${pf.texto}\n\nEmpezás por la práctica ${h} · ${practiceName(h)}.`, kb: [[B('▶ Practicar', `ej:${h}`)], [B('Ir al inicio', 'm')]] };
+}
+
+function daysAway(u, today) {
+  const days = [...L.practiceDays(u)].sort();
+  return days.length ? Math.round((Date.parse(today) - Date.parse(days[days.length - 1])) / 86400000) : 0;
+}
+function statusLine(u) {
+  const today = L.dayKey(), gap = daysAway(u, today);
+  let t = `Llevás ${L.fmtMin(L.totalMinutes(u))}.`;
+  if (gap >= 3) t += ` Hace ${gap} días que no practicás.`;
+  if (!L.practiceDays(u).has(today)) t += ' Cinco minutos alcanzan.';
+  return t;
+}
+const bottomRow = () => [B('Mi avance', 'pr'), B('Más', 'mas')];
+
+function learnHome(u, prefix) {
+  const h = L.hoy(u);
+  if (!h) {
+    return { text: `${prefix}🟢 Aprender\n\nCompletaste las nueve prácticas. Podés pasar a Mantener o repetir la que quieras.\n\n${statusLine(u)}`, kb: [[B('Pasar a Mantener', 'mo:m')], [B('Elegir una práctica', 'el')], bottomRow()] };
+  }
+  return {
+    text: `${prefix}🟢 Aprender\n\nPráctica ${h} de 9 · ${practiceName(h)}\nObjetivo: ${C.PRACTICES[h - 1].objetivo}\n\n${statusLine(u)}`,
+    kb: [[B('▶ Practicar', `ej:${h}`)], [B('Practicar sin mirar el teléfono', `me:${h}:0`)], bottomRow()],
+  };
+}
+
+const ensureDeck = (u) => { if (!u.deck) u.deck = {}; if (!u.flags.mazo) { u.flags.mazo = true; const today = L.dayKey(); for (const w of C.seedDeck()) u.deck[w] = u.deck[w] || { box: 0, due: today }; } };
+function keepHome(u, prefix) {
+  ensureDeck(u);
+  const n = L.dueCards(u, L.dayKey()).length;
+  return {
+    text: `${prefix}🔵 Mantener\n\n${n ? `Hoy tenés ${n} ${n === 1 ? 'palabra' : 'palabras'} para repasar.` : 'Hoy no quedan palabras para repasar.'}\n\n${statusLine(u)}`,
+    kb: [...(n ? [[B('▶ Repasar palabras', 'mi')]] : []), [B('Usarla al hablar', 'hb')], [B('Agregar una palabra que se me traba', 'mad')], bottomRow()],
+  };
 }
 
 function menu(u, prefix = '') {
-  const today = L.dayKey(), h = L.hoy(u);
-  const days = [...new Set(u.minutes.map((e) => e.day))].sort();
-  let head = h ? `Hoy: práctica ${h} · ${C.PRACTICES[h - 1].name}.\nObjetivo: ${C.PRACTICES[h - 1].objetivo}` : 'Completaste las nueve prácticas. Seguí en Habla y Mantenimiento, o repetí cualquiera.';
-  head += `\n\nLlevás ${L.fmtMin(L.totalMinutes(u))}.`;
-  if (days.length) {
-    const gap = Math.round((Date.parse(today) - Date.parse(days[days.length - 1])) / 86400000);
-    if (gap >= 3) head += ` Hace ${gap} días que no practicás.`;
-  }
-  if (!days.includes(today)) head += ' Cinco minutos alcanzan.';
-  const btn = (p) => B((p.n === h ? '▶ ' : '') + p.label, `p:${p.n}`);
-  const P = C.PRACTICES;
+  if (u.mode === 'aprender') return learnHome(u, prefix);
+  if (u.mode === 'mantener') return keepHome(u, prefix);
+  return modeScreen(prefix || (u.testDone ? 'Cambié el menú para que sea más simple.\n\n' : ''));
+}
+
+// ---------- ejercicio ----------
+const stuck = (u, n) => L.lastRatings(u, n, 3).join('') === 'nnn';
+
+// open = false: el mismo ejercicio, ya cerrado (sin botones), para que quede a la vista.
+function exerciseScreen(n, i, s, open = true) {
+  const pages = C.pagesFor(n), t = pages.length;
+  i = clamp(i, t);
+  const text = [`Práctica ${n} · ${practiceName(n)}${t > 1 ? `  (${i + 1}/${t})` : ''}`, s && s.cue, s && s.extra, pages[i],
+    open ? 'Una línea, varias veces, lento. Cuando termines, tocá Terminé.' : null].filter(Boolean).join('\n\n');
+  if (!open) return { text, kb: [] };
+  const kb = [];
+  if (t > 1) kb.push([B('◀', `pg:${n}:${Math.max(0, i - 1)}`), B(`${i + 1}/${t}`, `pg:${n}:${i}`), B('▶', `pg:${n}:${Math.min(t - 1, i + 1)}`)]);
+  kb.push([B('Terminé', `fin:${n}`)], [B('Cómo se hace', `th:${n}`), B('No me sale', `ns:${n}`)]);
+  return { text, kb };
+}
+
+const theoryText = (n) => `Cómo se hace · Práctica ${n}\n\n${C.PRACTICES[n - 1].teoria.join('\n\n')}`;
+
+function startExercise(u, n) {
+  const p = C.PRACTICES[n - 1];
+  if (!p) return menu(u);
+  const cue = p.cues[L.guidedSessions(u) % p.cues.length];
+  const extra = n === 3 && stuck(u, 3) && u.perfil !== 'gutural' ? p.extra : null;
+  const firstTime = !u.flags[`th${n}`] && !L.hasHistory(u, n);
+  u.flags[`th${n}`] = true;
+  u.pending = null;
+  u.session = { practice: n, start: Date.now(), page: 0, cue, extra };
+  const ex = exerciseScreen(n, 0, u.session);
+  return firstTime ? [{ text: theoryText(n), kb: [] }, fresh(ex)] : ex;
+}
+
+function helpScreen(u, n, i) {
+  if (n >= 5) return { text: C.AYUDA_PALABRAS, kb: [[B(`Ir a la práctica ${n - 1}`, `ej:${n - 1}`)]] };
+  const order = (C.PERFILES[u.perfil] || C.PERFILES.simple).rutas, t = order.length;
+  i = clamp(i, t);
+  const r = C.RUTAS[order[i]];
+  if (!u.rutas.includes(r.n)) u.rutas.push(r.n);
+  const nav = [];
+  if (i > 0) nav.push(B('◀ Anterior', `ns:${n}:${i - 1}`));
+  if (i < t - 1) nav.push(B('Otro camino ▶', `ns:${n}:${i + 1}`));
+  return { text: `No me sale  (${i + 1}/${t})\n\nSon caminos distintos al mismo sonido. Probá uno varios días; si no funciona, pasá al siguiente.\n\n${r.name}\n\n${r.texto}`, kb: [nav] };
+}
+
+// ---------- usarla al hablar (Mantener) ----------
+function speakScreen(u, open = true) {
+  const [name, txt] = C.FASE2[u.fase2];
   return {
-    text: prefix + head,
-    kb: [[btn(P[0]), btn(P[1]), btn(P[2])], [btn(P[3]), btn(P[4]), btn(P[5])], [btn(P[6]), btn(P[7]), btn(P[8])],
-      [B('Mi progreso', 'pr'), B('Mantenimiento', 'ma'), B('Comunidad', 'co')], [B('Habla', 'f2'), B('Práctica libre', 'fr'), B('Ajustes', 'se')]],
+    text: `Usarla al hablar · Paso ${u.fase2 + 1} de ${C.FASE2.length}: ${name}\n\n${txt}`,
+    kb: open ? [[B('Terminé', 'fin:10')], HOME] : [],
   };
 }
 
-function theory(n, i) {
-  const p = C.PRACTICES[n - 1], t = p.teoria.length; i = Math.max(0, Math.min(i, t - 1));
-  const nav = [];
-  if (i > 0) nav.push(B('◀', `th:${n}:${i - 1}`));
-  nav.push(i < t - 1 ? B('Siguiente ▶', `th:${n}:${i + 1}`) : B('Entendí, a practicar', `l:${n}:0`));
-  return { text: `Práctica ${n} · ${p.name}  (${i + 1}/${t})\nObjetivo: ${p.objetivo}\n\n${p.teoria[i]}`, kb: [nav, MENU] };
-}
-
-const stuck = (u, n) => L.lastRatings(u, n, 3).join('') === 'nnn';
-const showRutas = (u, n) => n <= 4 && (stuck(u, n) || u.perfil === 'sinsimple' || u.perfil === 'sustitucion' || u.rutas.length > 0);
-
-function listPage(u, n, i) {
-  const p = C.PRACTICES[n - 1], pages = C.pagesFor(n, u.sinSeparar), t = pages.length;
-  i = Math.max(0, Math.min(i, t - 1));
-  const kb = [];
-  if (t > 1) kb.push([B('◀', `l:${n}:${Math.max(0, i - 1)}`), B(`${i + 1}/${t}`, `l:${n}:${i}`), B('▶', `l:${n}:${Math.min(t - 1, i + 1)}`)]);
-  if (p.split) kb.push([B(u.sinSeparar ? 'Ver separada' : 'Ver sin separar', `sp:${n}:${i}`)]);
-  kb.push([B('Empecé', `go:${n}:${i}`), B('Ver teoría', `th:${n}:0`)]);
-  const tools = [B('Modo memoria', `me:${n}:${i}`)];
-  if (L.guidedSessions(u) >= 1) tools.push(B('Preparación', `pp:${n}`));
-  kb.push(tools);
-  const more = [];
-  if (showRutas(u, n)) more.push(B('Si no sale', `sn:${n}:0`));
-  if (n >= 5) more.push(B('Escucha', `es:${n}`));
-  if (more.length) kb.push(more);
-  kb.push(MENU);
-  return { text: `Práctica ${n} · ${p.name}${t > 1 ? `  (${i + 1}/${t})` : ''}\n\n${pages[i]}\n\nUna línea, varias veces, lento. Cuando sale, pasá a la siguiente.`, kb };
-}
-
-const hhmm = (ts) => new Intl.DateTimeFormat('es-AR', { timeZone: process.env.BOT_TZ || 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit' }).format(ts);
-function practicing(u) {
+// ---------- final de una sesión: una sola pregunta ----------
+function finish(u, n) {
   const s = u.session;
-  const what = s.practice === 10 ? ` Habla: ${C.FASE2[u.fase2][0].toLowerCase()}` : s.practice ? ` la práctica ${s.practice}` : ' (libre)';
-  let t = `Practicando${what}. Empezaste a las ${hhmm(s.start)}.`;
-  if (s.cue) t += `\n\n${s.cue}`;
-  if (s.extra) t += `\n\n${s.extra}`;
-  if (s.practice >= 1 && s.practice <= 9) {
-    t += '\n\nSi querés, contá los intentos de una línea: 5 intentos, y si salen 4 pasás a la siguiente.';
-    if (s.ok + s.ko) t += `\nBloque: ${'✓'.repeat(s.ok)}${'✗'.repeat(s.ko)} (${s.ok + s.ko}/5)`;
-    if (s.msg) t += `\n${s.msg}`;
-  }
+  if (!s || s.practice !== n) return fresh(menu(u, 'Ese ejercicio ya estaba cerrado.\n\n'));
+  const min = L.elapsedMin(s.start);
+  u.session = null;
+  u.minutes.push({ day: L.dayKey(), min, practice: n, source: 'guiada' });
+  u.pending = { practice: n };
+  const speak = n === 10;
+  return [
+    speak ? speakScreen(u, false) : exerciseScreen(n, s.page || 0, s, false),
+    fresh({
+      text: `${min} min anotados. ${speak ? '¿Cómo te fue?' : '¿La R vibró? (más de un golpe seguido)'}`,
+      kb: [speak ? [B('Sin trabas', 'r:s'), B('Se trabó', 'r:n')] : [B('Sí, vibró', 'r:s'), B('Todavía no', 'r:n')]],
+    }),
+  ];
+}
+
+const lastWeek = (today) => { const d = new Set(); for (let i = 0; i < 7; i++) d.add(L.addDays(today, -i)); return d; };
+
+function answerSpeak(u, x, today) {
+  u.ratings.push({ practice: 10, rating: x, day: today, step: u.fase2 });
+  const here = u.ratings.filter((r) => r.practice === 10 && r.step === u.fase2);
+  const week = lastWeek(today);
+  const good = new Set(here.filter((r) => r.rating === 's' && week.has(r.day)).map((r) => r.day)).size;
   const kb = [];
-  if (s.practice >= 1 && s.practice <= 9) kb.push([B('✓ Salió', 'ok'), B('✗ No', 'ko')]);
-  kb.push([B('Terminé', 'end'), B('Cancelar', 'cx')]);
+  let t = x === 's' ? 'Muy bien. Queda anotado.' : 'Anotado. Si alguna palabra se trabó, agregala para repasarla.';
+  if (x === 'n') kb.push([B('Agregar palabra', 'mad')]);
+  if (x === 's' && good >= 5 && u.fase2 < C.FASE2.length - 1) { t += '\n\nEste paso ya parece estable.'; kb.push([B('Pasar al siguiente paso', 'hb:u')]); }
+  if (u.fase2 > 0 && here.slice(-3).map((r) => r.rating).join('') === 'nnn') { t += '\n\nSe trabó las últimas tres veces. Podés volver al paso anterior.'; kb.push([B('Volver al paso anterior', 'hb:d')]); }
+  kb.push([B('Listo', 'm')]);
   return { text: t, kb };
 }
 
-function rutasScreen(u, n, i) {
-  const order = (C.PERFILES[u.perfil] || C.PERFILES.simple).rutas, t = order.length;
-  i = Math.max(0, Math.min(i, t - 1));
-  const r = C.RUTAS[order[i]];
-  if (!u.rutas.includes(r.n)) u.rutas.push(r.n);
-  return {
-    text: `Si no sale (${i + 1}/${t})\n\nSon caminos distintos al mismo sonido. Probá uno varios días; si no funciona, pasá al siguiente. Quedate con el que te sirva.\n\n${r.name}\n\n${r.texto}`,
-    kb: [[B('◀', `sn:${n}:${Math.max(0, i - 1)}`), B(`${i + 1}/${t}`, `sn:${n}:${i}`), B('▶', `sn:${n}:${Math.min(t - 1, i + 1)}`)],
-      [B('Empecé', `go:${n}:0`), B('Volver a la práctica', `l:${n}:0`)], MENU],
-  };
+function answer(u, x) {
+  const pd = u.pending;
+  if (!pd) return menu(u);
+  u.pending = null;
+  x = x === 's' ? 's' : 'n';
+  const today = L.dayKey(), n = pd.practice;
+  if (n === 10) return answerSpeak(u, x, today);
+
+  const before = L.hoy(u), was = L.superada(u, n);
+  u.ratings.push({ practice: n, rating: x, day: today });
+  const after = L.hoy(u), kb = [];
+  let t;
+  if (x === 's') {
+    if (!was && L.superada(u, n)) {
+      t = `¡Superaste la práctica ${n}!`;
+      if (after && after !== before) t += ` Ahora sigue la ${after} · ${practiceName(after)}.`;
+      if (!after) { t += ' Completaste las nueve.\n\n¿Pasás a Mantener, para que la R no se te trabe?'; kb.push([B('Pasar a Mantener', 'mo:m')]); }
+    } else if (was) t = 'Bien. Esta práctica ya la tenías superada.';
+    else t = `Bien. Práctica ${n}, días en los que vibró: ${L.salioDays(u, n).size} de 3.`;
+    if (!u.flags.grabate) {
+      u.flags.grabate = true;
+      t += '\n\nPrimera vez que vibra: buen momento para grabarte. Así tenés una referencia de cómo suena cuando sale.';
+    }
+  } else {
+    t = 'Anotado. Cada intento suma.';
+    if (stuck(u, n)) {
+      t += '\n\nLas últimas tres veces no vibró. Es normal en algún momento del camino. Probá otra forma de llegar al sonido, o volvé unos minutos a la práctica anterior.';
+      const row = [B('No me sale', `ns:${n}`)];
+      if (n > 1) row.push(B(`Ir a la ${n - 1}`, `ej:${n - 1}`));
+      kb.push(row);
+    }
+  }
+  if (!u.flags.derivacion && L.derivacion(u, today)) {
+    u.flags.derivacion = true;
+    t += '\n\nHace varias semanas que practicás sin que salga. A veces hay causas físicas que la práctica sola no resuelve. Una evaluación con un fonoaudiólogo puede ayudar. Podés seguir practicando igual.';
+    kb.push([B('Cuándo consultar', 'cs')]);
+  }
+  kb.push([B('Listo', 'm')]);
+  return { text: t, kb };
 }
 
+// ---------- sin mirar el teléfono ----------
 function memoryScreen(n, i) {
-  const ls = C.memoryLines(n, i);
+  const t = C.pagesFor(n).length; i = clamp(i, t);
   return {
-    text: `Modo memoria · Práctica ${n}\n\nMemorizá estas líneas y practicalas sin mirar el teléfono: caminando, en el auto, donde sea. Después cargás los minutos.\n\n${ls.join('\n')}\n\nSi estás manejando, la vista en el camino. No toques el teléfono hasta llegar.`,
-    kb: [[B('Cargar minutos', `mm:${n}`)], [B('Volver a la práctica', `l:${n}:${i}`)], MENU],
+    text: `Sin mirar el teléfono · Práctica ${n}\n\nMemorizá estas líneas y practicalas donde sea: caminando, en el auto. Después cargás los minutos.\n\n${C.memoryLines(n, i).join('\n')}\n\nSi estás manejando, la vista en el camino. No toques el teléfono hasta llegar.`,
+    kb: [[B('Cargar minutos', `mm:${n}`)], ...(t > 1 ? [[B('Otras líneas', `me:${n}:${(i + 1) % t}`)]] : []), HOME],
   };
 }
-const minutesKb = (n) => [[5, 10, 20, 30].map((m) => B(String(m), `mn:${m}:${n}`)).concat([B('Otro', `mn:o:${n}`)]), MENU];
+const minutesKb = (n) => [[5, 10, 20, 30].map((m) => B(String(m), `mn:${m}:${n}`)).concat([B('Otro', `mn:o:${n}`)]), HOME];
+function logMinutes(u, practice, min, source) {
+  u.minutes.push({ day: L.dayKey(), min, practice, source });
+  return { text: `Anotado: ${min} min. Total: ${L.fmtMin(L.totalMinutes(u))}. Racha: ${L.streak(u, L.dayKey())} días.`, kb: [[B('Listo', 'm')]] };
+}
 
-function fase2Screen(u) {
-  const [name, txt] = C.FASE2[u.fase2];
-  return {
-    text: `Habla · Escalón ${u.fase2 + 1} de ${C.FASE2.length}: ${name}\n\nAcá llevás la R a situaciones reales, con cada vez más presión. Subís de escalón cuando el actual es estable (5 días distintos en una semana).\n\n${txt}`,
-    kb: [[B('Empecé', 'go:10:0')], [B('Bajar escalón', 'f2:d'), B('Subir escalón', 'f2:u')], MENU],
-  };
+// ---------- repaso de palabras (Mantener) ----------
+// Una palabra: separada → unida. Una frase: entera y, abajo, las palabras que llevan la R que vibra.
+function showCard(w) {
+  if (!w.includes(' ')) return C.wordSteps(w);
+  const hard = w.split(' ').filter((x) => C.splitTrill(x)).map(C.wordSteps);
+  return [w, ...(hard.length ? ['', ...hard] : [])].join('\n');
 }
+function cardScreen(u) {
+  const d = u.dose;
+  return { text: `Palabra ${d.i + 1} de ${d.queue.length}\n\nDecila en voz alta.\n\n${showCard(d.queue[d.i])}`, kb: [[B('Bien', 'mg:s'), B('Se trabó', 'mg:n')]] };
+}
+
+// ---------- avance y Más ----------
+function progress(u) {
+  const today = L.dayKey(), d7 = L.daysInLast7(u, today);
+  let t = `Mi avance\n\n⏱ Total: ${L.fmtMin(L.totalMinutes(u))}\n🔥 Racha: ${L.streak(u, today)} días\n📅 Últimos 7 días: ${d7} de 5 practicados\n${dots(d7, 5)}`;
+  if (u.mode === 'mantener') {
+    const cards = Object.values(u.deck || {});
+    t += `\n\nPalabras en tu repaso: ${cards.length}\nFirmes: ${cards.filter((c) => c.box >= 3).length}\n\nUsarla al hablar: paso ${u.fase2 + 1} de ${C.FASE2.length}`;
+    return { text: t, kb: [HOME] };
+  }
+  const h = L.hoy(u);
+  const mark = (p) => `${L.superada(u, p.n) ? '✅' : p.n === h ? '▶️' : '⚪'}${p.n}`;
+  t += `\n\nPrácticas\n${[C.PRACTICES.slice(0, 5), C.PRACTICES.slice(5)].map((r) => r.map(mark).join('   ')).join('\n')}\n✅ superada: vibró en 3 días distintos`;
+  return { text: t, kb: [[B('Elegir otra práctica', 'el')], HOME] };
+}
+const chooseScreen = () => ({ text: 'Elegí una práctica. Todas están abiertas.', kb: [...C.PRACTICES.map((p) => [B(`${p.n} · ${p.name}`, `ej:${p.n}`)]), HOME] });
+
+const moreScreen = (u) => ({
+  text: 'Más',
+  kb: [[u.mode === 'mantener' ? B('Cambiar a Aprender', 'mo:a') : B('Cambiar a Mantener', 'mo:m')], [B('Recordatorio', 'rm')], [B('Cómo funciona', 'in:0')],
+    [B('Consultar a un fonoaudiólogo', 'cs')], [B('Mis datos', 'md')], HOME],
+});
 
 function consultaResumen(u) {
   const pf = C.PERFILES[u.perfil];
   const days = u.minutes.map((e) => e.day).sort();
   const weeks = days.length ? Math.max(1, Math.round((Date.parse(L.dayKey()) - Date.parse(days[0])) / (7 * 86400000))) : 0;
-  const per = [1, 2, 3].map((p) => { const r = u.ratings.filter((x) => x.practice === p); return `  práctica ${p}: ${r.length} sesiones, ${r.filter(L.salioOk).length} salió`; }).join('\n');
+  const per = [1, 2, 3].map((p) => { const r = u.ratings.filter((x) => x.practice === p); return `  práctica ${p}: ${r.length} sesiones, vibró en ${r.filter(L.salioOk).length}`; }).join('\n');
   const rutas = u.rutas.length ? u.rutas.map((n) => C.RUTAS[n].name.split(' · ')[1]).join(', ') : 'ninguna';
   return {
     text: `Qué llevar a la consulta\n\nCopiá esto o mostralo en el teléfono:\n\n· Qué pasa con la R: ${pf ? pf.name : 'sin indicar'}\n· Práctica: ${L.fmtMin(L.totalMinutes(u))} en ${weeks} semanas\n${per}\n· Rutas alternativas probadas: ${rutas}\n\nAgregá vos:\n· desde cuándo te pasa\n· si tuviste fisura de paladar, problemas de audición u ortodoncia\n· si alguien en tu familia tiene la misma dificultad`,
-    kb: [[B('Volver', 'se')]],
+    kb: [[B('Volver', 'mas')]],
   };
 }
 
-function progress(u) {
-  const today = L.dayKey(), d7 = L.daysInLast7(u, today);
-  const wk = [0, 1, 2].map((k) => L.minutesInWindow(u, today, k * 7, k * 7 + 6)), mx = Math.max(...wk, 1), h = L.hoy(u);
-  const mark = (p) => `${L.superada(u, p.n) ? '✅' : p.n === h ? '▶️' : '⚪'}${p.n}`;
-  const marks = [C.PRACTICES.slice(0, 5), C.PRACTICES.slice(5)].map((r) => r.map(mark).join('   ')).join('\n');
-  const wkNames = ['Esta semana', 'Semana pasada', 'Hace 2 semanas'];
-  return {
-    text: `Mi progreso\n\n⏱ Total: ${L.fmtMin(L.totalMinutes(u))}\n🔥 Racha: ${L.streak(u, today)} días\n📅 Últimos 7 días: ${d7} de 5 practicados\n${dots(d7, 5)}\n\nMinutos por semana\n${wk.map((m, k) => `${wkNames[k]}\n${bar(m, mx)}  ${m} min`).join('\n')}\n\nPrácticas\n${marks}\n✅ superada: salió en 3 días distintos\n\nHabla: escalón ${u.fase2 + 1} de ${C.FASE2.length}`,
-    kb: [[B('Mis hitos', 'hi'), B('Notas', 'nt')], MENU],
-  };
-}
-const hitosScreen = (u) => ({
-  text: 'Mis hitos\n\n' + C.HITOS.map(([k, name]) => {
-    const h = u.hitos[k] || {};
-    return `${name.padEnd(24)} ${h.estable ? `✓ primera vez ${h.primera} · estable ${h.estable}` : h.primera ? `✓ primera vez ${h.primera}` : '· todavía no'}`;
-  }).join('\n') + '\n\nPrimera vez: salió una vez. Estable: sale en al menos 5 días distintos dentro de una semana. Los marcás vos.',
-  kb: [...C.HITOS.reduce((rows, [k, name], i) => { if (i % 2 === 0) rows.push([]); rows[rows.length - 1].push(B(name, `hk:${k}`)); return rows; }, []), MENU],
-});
-
-const sepText = (w) => w.split(' ').map((x) => { const p = C.splitTrill(x); return p ? p.join(' · ') : x; }).join(' ');
-function cardScreen(u) {
-  const d = u.dose, w = d.queue[d.i];
-  return { text: `Tarjeta ${d.i + 1}/${d.queue.length}\n\nDecila en voz alta. Si se traba, mirala separada.\n\n  ${d.sep ? sepText(w) : w}`, kb: [[B(d.sep ? 'Ver junta' : 'Ver separada', 'ms')], [B('Salió', 'mg:s'), B('Costó', 'mg:c'), B('No salió', 'mg:n')]] };
-}
-
-function logMinutes(u, practice, min, source) {
-  u.minutes.push({ day: L.dayKey(), min, practice, source });
-  return `Anotado: ${min} min. Total: ${L.fmtMin(L.totalMinutes(u))}. Racha: ${L.streak(u, L.dayKey())} días.`;
-}
-const rateKb = [[B('Salió', 'rt:s'), B('A medias', 'rt:m'), B('No salió', 'rt:n')]];
-
-// ---------- enrutador ----------
+// ---------- recordatorios ----------
 const hh = (h) => String(h).padStart(2, '0') + ':00';
 function reminderScreen(u, justSet) {
   const r = u.rem, on = r && r.on;
@@ -200,13 +290,15 @@ function reminderScreen(u, justSet) {
     ? `Recordatorio diario\n\nActivado a las ${hh(r.hour)}.${justSet ? ' Empieza mañana.' : ''} Te escribo una vez por día, solo si todavía no practicaste. Si pasan 5 días sin que practiques, lo pauso solo.\n\nPodés cambiar la hora o apagarlo.`
     : 'Recordatorio diario\n\nEstá apagado. Si lo activás, te escribo una vez por día a la hora que elijas, solo si todavía no practicaste. Empieza mañana.\n\nElegí la hora:';
   const hours = [8, 12, 18, 20, 21].map((h) => B((on && r.hour === h ? '✓ ' : '') + hh(h), `rm:h:${h}`));
-  return { text, kb: [hours.slice(0, 3), hours.slice(3), ...(on ? [[B('Apagar', 'rm:off')]] : []), [B('Ajustes', 'se'), B('Menú', 'm')]] };
+  return { text, kb: [hours.slice(0, 3), hours.slice(3), ...(on ? [[B('Apagar', 'rm:off')]] : []), [B('Volver', 'mas')]] };
 }
 
 function reminderText(u) {
-  const h = L.hoy(u), p = h && C.PRACTICES[h - 1];
-  const hoy = p ? `Hoy: práctica ${h} · ${p.name}.\nObjetivo: ${p.objetivo}` : 'Hoy podés repasar con Mantenimiento o seguir con Habla.';
-  return { text: `Es la hora de tu práctica.\n\n${hoy}\n\nCinco minutos alcanzan.`, kb: [[B('Empezar', h ? `l:${h}:0` : 'm')], [B('Pausar recordatorios', 'rm:off')]] };
+  let what = 'Entrá y elegí cómo seguir.', button = B('Empezar', 'm');
+  const h = L.hoy(u);
+  if (u.mode === 'mantener') what = 'Hoy podés repasar tus palabras o usar la R al hablar.';
+  else if (u.mode === 'aprender' && h) { what = `Hoy: práctica ${h} · ${practiceName(h)}.\nObjetivo: ${C.PRACTICES[h - 1].objetivo}`; button = B('▶ Practicar', `ej:${h}`); }
+  return { text: `Es la hora de tu práctica.\n\n${what}\n\nCinco minutos alcanzan.`, kb: [[button], [B('Pausar recordatorios', 'rm:off')]] };
 }
 
 // Envía los recordatorios que toquen. Una vez por día por persona; se pausa solo tras 5 días sin practicar.
@@ -218,7 +310,7 @@ async function sendReminders(api, now = Date.now()) {
     r.ignored = r.last && !L.practiceDays(u).has(r.last) ? (r.ignored || 0) + 1 : 0;
     if (r.ignored >= 5) {
       r.on = false; r.ignored = 0; store.set(chat, u);
-      await api.send(chat, { text: 'Pausé los recordatorios porque pasaron varios días sin practicar. Cuando quieras, los volvés a activar en Ajustes. Sin apuro.', kb: [[B('Ir al menú', 'm')]] }).catch(() => {});
+      await api.send(chat, { text: 'Pausé los recordatorios porque pasaron varios días sin practicar. Cuando quieras, los volvés a activar en "Más". Sin apuro.', kb: [[B('Ir al inicio', 'm')]] }).catch(() => {});
       continue;
     }
     r.last = today;
@@ -228,180 +320,83 @@ async function sendReminders(api, now = Date.now()) {
   }
 }
 
+// ---------- enrutador ----------
 function route(u, data, ctx) {
   const [a, x, y] = data.split(':');
   const today = L.dayKey();
   switch (a) {
     case 'm': return menu(u);
+    case 'mo': {
+      if (x !== 'a' && x !== 'm') return menu(u);
+      u.mode = x === 'a' ? 'aprender' : 'mantener';
+      u.testDone = true; u.session = null; u.pending = null;
+      if (u.mode === 'aprender' && !u.perfil) return partidaScreen();
+      return menu(u);
+    }
+    case 'pf': {
+      if (!C.PARTIDA.a.some(([, v]) => v === x)) return menu(u);
+      u.perfil = x; u.mode = 'aprender'; u.testDone = true;
+      return perfilScreen(u);
+    }
     case 'in': return intro(+x || 0);
-    case 'how': return intro(0);
-    case 'ts': return test1();
-    case 't1': {
-      u.testDone = true; u.fase2Start = false;
-      if (x === 'x') { u.perfil = null; u.start = 1; return perfilScreen(u); }
-      u.perfil = C.TEST1.a[+x][1]; u.start = 1;
-      if (u.perfil === 'intermitente') return test2();
-      return perfilScreen(u);
+    case 'ej': return startExercise(u, +x);
+    case 'pg': {
+      const s = u.session && u.session.practice === +x ? u.session : null;
+      if (s) s.page = +y || 0;
+      return exerciseScreen(+x, +y || 0, s);
     }
-    case 't2': {
-      const v = C.TEST2.a[+x][1];
-      if (v === 'fase2') { u.fase2Start = true; u.start = 1; u.mantAbierto = true; }
-      else { u.start = v; if (v === 6) u.mantAbierto = true; }
-      return perfilScreen(u);
-    }
-    case 'p': return L.hasHistory(u, +x) ? listPage(u, +x, 0) : theory(+x, 0);
-    case 'th': return theory(+x, +y || 0);
-    case 'l': return listPage(u, +x, +y);
-    case 'sp': u.sinSeparar = !u.sinSeparar; return listPage(u, +x, +y);
-    case 'pp': return { text: C.PREPARACION, kb: [[B('Volver a la práctica', `l:${x}:0`)], MENU] };
-    case 'sn': return rutasScreen(u, +x, +y || 0);
-    case 'es': return { text: C.ESCUCHA, kb: [...(COMMUNITY_URL ? [[{ t: 'Ir al grupo', url: COMMUNITY_URL }]] : []), [B('Volver a la práctica', `l:${x}:0`)], MENU] };
+    // Ayuda del ejercicio: la primera respuesta va en un mensaje aparte, para no tapar la lista.
+    case 'th': return fresh({ text: theoryText(+x), kb: [] });
+    case 'ns': return y === undefined ? fresh(helpScreen(u, +x, 0)) : helpScreen(u, +x, +y);
+    case 'fin': return finish(u, +x);
+    case 'r': return answer(u, x);
     case 'me': return memoryScreen(+x, +y || 0);
     case 'mm': return { text: '¿Cuántos minutos practicaste?', kb: minutesKb(+x) };
-    case 'go': {
-      const n = +x, p = C.PRACTICES[n - 1];
-      const k = L.guidedSessions(u);
-      const cue = p ? p.cues[k % p.cues.length] : null;
-      const extra = n === 3 && stuck(u, 3) && u.perfil !== 'gutural' ? p.extra : null;
-      u.session = { practice: n, start: Date.now(), ok: 0, ko: 0, cue, extra };
-      return practicing(u);
-    }
-    case 'ok': case 'ko': {
-      const s = u.session; if (!s) return menu(u);
-      s[a]++; s.msg = null;
-      if (s.ok + s.ko >= 5) {
-        s.msg = s.ok >= 4 ? `${s.ok} de 5. Pasá a la línea siguiente.` : `${s.ok} de 5. Repetí la línea, más lento. Si vuelve a pasar, bajá a la anterior.`;
-        s.ok = 0; s.ko = 0;
-      }
-      return practicing(u);
-    }
-    case 'f2': {
-      if (x === 'u') u.fase2 = Math.min(u.fase2 + 1, C.FASE2.length - 1);
-      if (x === 'd') u.fase2 = Math.max(u.fase2 - 1, 0);
-      return fase2Screen(u);
-    }
-    case 'fr': {
-      if (x === 't') { u.session = { practice: 0, start: Date.now(), ok: 0, ko: 0 }; return practicing(u); }
-      if (x === 'c') return { text: '¿Cuántos minutos practicaste?', kb: minutesKb(0) };
-      return { text: 'Práctica libre\n\nPara cuando practicás por tu cuenta, sin la guía. Los minutos suman igual.', kb: [[B('Empezar cronómetro', 'fr:t')], [B('Cargar minutos', 'fr:c')], MENU] };
-    }
     case 'mn': {
       const n = +y || 0;
-      if (x === 'o') { u.awaiting = 'minutes'; u.awaitingPractice = n; return { text: 'Escribí cuántos minutos practicaste (un número).', kb: [MENU] }; }
-      return { text: logMinutes(u, n, +x, n ? 'memoria' : 'manual'), kb: [[B('Dejar nota', 'note'), B('Menú', 'm')]] };
+      if (x === 'o') { u.awaiting = 'minutes'; u.awaitingPractice = n; return { text: 'Escribí cuántos minutos practicaste (un número).', kb: [HOME] }; }
+      return logMinutes(u, n, +x, 'memoria');
     }
-    case 'cx': u.session = null; return menu(u);
-    case 'end': {
-      const s = u.session;
-      if (!s) return menu(u);
-      const min = Math.max(1, Math.round((Date.now() - s.start) / 60000));
-      u.session = null;
-      if (!s.practice) return { text: logMinutes(u, 0, min, 'cronómetro'), kb: [[B('Dejar nota', 'note'), B('Menú', 'm')]] };
-      u.pending = { practice: s.practice, min, ctrl: null };
-      if (L.guidedSessions(u) >= 1 && s.practice <= 9) {
-        return { text: `Terminaste. Fueron ${min} minutos.\n\nAntes de calificar: cuando salió mejor, ¿se sintió una vibración continua, más de un golpe?`, kb: [[B('Sí, vibró', 'ct:y'), B('No, un solo golpe', 'ct:n')], [B('No sé', 'ct:q')]] };
-      }
-      return { text: `Terminaste. Fueron ${min} minutos.\n\n¿Cómo te fue?`, kb: rateKb };
-    }
-    case 'ct': {
-      if (!u.pending) return menu(u);
-      u.pending.ctrl = x;
-      let t = '¿Cómo te fue?';
-      if (x === 'n') t = 'Un solo golpe es la R simple: el lugar es el correcto, falta la vibración. Va por buen camino.\n\n¿Cómo te fue?';
-      if (x === 'q') t = 'Para salir de la duda: grabate diciendo "pero" y "perro" y escuchá si la segunda vibra. Está en "Escucha", desde la práctica 5.\n\n¿Cómo te fue?';
-      return { text: t, kb: rateKb };
-    }
-    case 'rt': {
-      const pd = u.pending; if (!pd) return menu(u);
+    case 'hb': {
+      if (x === 'u') u.fase2 = Math.min(u.fase2 + 1, C.FASE2.length - 1);
+      if (x === 'd') u.fase2 = Math.max(u.fase2 - 1, 0);
       u.pending = null;
-      const before = L.hoy(u);
-      let t = logMinutes(u, pd.practice, pd.min, 'guiada');
-      u.ratings.push({ practice: pd.practice, rating: x, day: today, ctrl: pd.ctrl });
-      const after = L.hoy(u), kb = [];
-      if (pd.practice === 10) {
-        const days = new Set(); for (let i = 0; i < 7; i++) days.add(L.addDays(today, -i));
-        const n = new Set(u.ratings.filter((r) => r.practice === 10 && r.rating === 's' && days.has(r.day)).map((r) => r.day)).size;
-        if (n >= 5 && u.fase2 < C.FASE2.length - 1) { t += '\n\nEste escalón ya parece estable. ¿Subimos?'; kb.push([B('Subir escalón', 'f2:u'), B('Ahora no', 'm')]); }
-        kb.push([B('Dejar nota', 'note'), B('Menú', 'm')]);
-        return { text: t, kb };
-      }
-      if (after !== before) t += after ? `\n\nPasaste a la práctica ${after}: ${C.PRACTICES[after - 1].name.toLowerCase()}.` : '\n\nCompletaste las nueve prácticas. Seguí en Habla.';
-      if (x === 's' && pd.ctrl !== 'n' && !u.flags.grabate) {
-        u.flags.grabate = true;
-        t += '\n\nPrimera vez que sale: buen momento para grabarte y escucharte. Así tenés una referencia de cómo suena cuando sale.';
-      }
-      if (x === 'n' && stuck(u, pd.practice)) {
-        t += '\n\nLas últimas tres veces no salió. Es normal en algún momento del camino. Hay otros caminos al mismo sonido en "Si no sale", o podés volver unos minutos a la práctica anterior.';
-        const row = [];
-        if (pd.practice <= 4) row.push(B('Si no sale', `sn:${pd.practice}:0`));
-        if (pd.practice > 1) row.push(B(`Ir a la ${pd.practice - 1}`, `p:${pd.practice - 1}`));
-        if (row.length) kb.push(row);
-      }
-      if (!u.flags.derivacion && L.derivacion(u, today)) {
-        u.flags.derivacion = true;
-        t += '\n\nHace varias semanas que practicás sin que salga. A veces hay causas físicas que la práctica sola no resuelve. Una evaluación con un fonoaudiólogo puede ayudar. Podés seguir practicando igual.';
-        kb.push([B('Cuándo consultar', 'cs'), B('Qué llevar', 'cq')]);
-      }
-      const hk = Object.keys(C.HITO_PRACTICAS).find((k) => C.HITO_PRACTICAS[k].includes(pd.practice));
-      if (x === 's' && hk && !(u.hitos[hk] || {}).estable) {
-        const days = new Set(); for (let i = 0; i < 7; i++) days.add(L.addDays(today, -i));
-        const n = new Set(u.ratings.filter((r) => L.salioOk(r) && C.HITO_PRACTICAS[hk].includes(r.practice) && days.has(r.day)).map((r) => r.day)).size;
-        if (n >= 5) { t += '\n\nParece que ya es estable. ¿Lo marcamos?'; kb.push([B('Marcar estable', `hs:${hk}:e`), B('Ahora no', 'm')]); }
-      }
-      kb.push([B('Dejar nota', 'note'), B('Menú', 'm')]);
-      return { text: t, kb };
-    }
-    case 'note': u.awaiting = 'note'; return { text: 'Escribí tu nota (opcional). Por ejemplo, qué te ayudó hoy.', kb: [MENU] };
-    case 'nt': return { text: 'Notas\n\n' + (u.notes.slice(-5).map((n) => `${n.day}: ${n.text}`).join('\n') || 'Todavía no hay notas.'), kb: [[B('Volver', 'pr')]] };
-    case 'pr': return progress(u);
-    case 'hi': return hitosScreen(u);
-    case 'hk': return { text: C.HITOS.find((h) => h[0] === x)[1], kb: [[B('Me salió por primera vez', `hs:${x}:p`)], [B('Me sale estable', `hs:${x}:e`)], [B('Desmarcar', `hs:${x}:x`)], [B('Volver', 'hi')]] };
-    case 'hs': {
-      const h = u.hitos[x] || {};
-      if (y === 'p') h.primera = h.primera || today;
-      if (y === 'e') { h.primera = h.primera || today; h.estable = today; }
-      if (y === 'x') { delete h.primera; delete h.estable; }
-      u.hitos[x] = h;
-      return hitosScreen(u);
-    }
-    case 'ma': {
-      if (x === 'o') u.mantAbierto = true;
-      if (!u.mantAbierto && !(u.hitos.frases || {}).estable) {
-        return { text: 'Mantenimiento\n\nEs para cuando la R ya sale y hay que automatizarla: repasás las palabras y frases que se traban, con intervalos que se alargan cuando salen.\n\nSe abre cuando marcás el hito "En frases" como estable. Si ya te sale y querés usarlo, abrilo ahora.', kb: [[B('Abrir igual', 'ma:o')], MENU] };
-      }
-      if (!u.deck) { u.deck = {}; for (const w of C.seedDeck()) u.deck[w] = { box: 0, due: today }; }
-      return { text: `Mantenimiento\n\nRepaso de las palabras y frases que te cuestan. Cuando una sale, vuelve en más días (1, 2, 4, 8, 16). Cuando no sale, vuelve mañana.\n\nHoy toca: ${L.dueCards(u, today).length} tarjetas.`, kb: [[B('Empezar', 'mi'), B('Mi mazo', 'mz')], MENU] };
+      u.session = { practice: 10, start: Date.now() };
+      return speakScreen(u);
     }
     case 'mi': {
+      ensureDeck(u);
       const queue = L.dueCards(u, today);
-      if (!queue.length) return { text: 'No hay tarjetas para hoy.', kb: [MENU] };
-      u.dose = { queue, i: 0, s: 0, c: 0, n: 0, sep: false };
+      if (!queue.length) return menu(u);
+      u.dose = { queue, i: 0, s: 0, n: 0, start: Date.now() };
       return cardScreen(u);
     }
-    case 'ms': if (!u.dose) return menu(u); u.dose.sep = !u.dose.sep; return cardScreen(u);
     case 'mg': {
       const d = u.dose; if (!d) return menu(u);
-      L.grade(u.deck[d.queue[d.i]], x, today); d[x]++; d.i++; d.sep = false;
-      if (d.i >= d.queue.length) { const t = `Listo. Salió ${d.s}, costó ${d.c}, no salió ${d.n}.`; u.dose = null; return { text: t, kb: [MENU] }; }
-      return cardScreen(u);
+      const g = x === 's' ? 's' : 'n';
+      if (u.deck[d.queue[d.i]]) L.grade(u.deck[d.queue[d.i]], g, today);
+      d[g] = (d[g] || 0) + 1; d.i++;
+      if (d.i < d.queue.length) return cardScreen(u);
+      u.dose = null;
+      u.minutes.push({ day: today, min: L.elapsedMin(d.start || Date.now()), practice: 11, source: 'repaso' });
+      return { text: `Listo: ${d.i} ${d.i === 1 ? 'palabra' : 'palabras'}. Bien: ${d.s || 0}. Se trabaron: ${d.n || 0}.${d.n ? '\n\nLas que se trabaron vuelven mañana.' : ''}`, kb: [[B('Listo', 'm')]] };
     }
-    case 'mz': return { text: `Mi mazo: ${Object.keys(u.deck || {}).length} tarjetas\n\nPodés agregar palabras o frases que se te traben en el día a día.`, kb: [[B('Agregar', 'mad'), B('Ver difíciles', 'mhd')], [B('Volver', 'ma')]] };
-    case 'mad': u.awaiting = 'addword'; return { text: 'Escribí la palabra o frase que querés agregar.', kb: [MENU] };
-    case 'mhd': return { text: 'Difíciles (primer escalón):\n\n' + (Object.entries(u.deck || {}).filter(([, c]) => c.box === 0).map(([w]) => w).slice(0, 40).join(', ') || 'Ninguna.'), kb: [[B('Volver', 'mz')]] };
-    case 'co': return { text: 'Comunidad\n\nUn grupo de personas que están en lo mismo. Podés mandar una nota de voz para que otros te digan si la R vibra. Respetá la privacidad de los demás.' + (COMMUNITY_URL ? '' : '\n\n(Todavía no hay grupo configurado.)'), kb: [...(COMMUNITY_URL ? [[{ t: 'Entrar al grupo', url: COMMUNITY_URL }]] : []), MENU] };
-    case 'cs': return { text: C.CONSULTA, kb: [[B('Qué llevar a la consulta', 'cq')], [B('Volver', 'se')]] };
+    case 'mad': u.awaiting = 'addword'; return { text: 'Escribí la palabra o frase que se te traba.', kb: [HOME] };
+    case 'pr': return progress(u);
+    case 'el': return chooseScreen();
+    case 'mas': case 'se': return moreScreen(u);
+    case 'cs': return { text: C.CONSULTA, kb: [[B('Qué llevar a la consulta', 'cq')], [B('Volver', 'mas')]] };
     case 'cq': return consultaResumen(u);
-    case 'sg': return { text: C.SEGURIDAD, kb: [[B('Volver', 'se')]] };
     case 'rm': {
       if (x === 'h' && [8, 12, 18, 20, 21].includes(+y)) u.rem = { ...u.rem, on: true, hour: +y, last: today, ignored: 0 };
       if (x === 'off') u.rem = { ...u.rem, on: false, ignored: 0 };
       return reminderScreen(u, x === 'h' && u.rem.on);
     }
-    case 'se': return { text: 'Ajustes', kb: [[B('Cómo funciona', 'in:0'), B('Rehacer el test', 'ts')], [B('Cuándo consultar', 'cs'), B('Qué llevar a la consulta', 'cq')], [B('Recordatorio', 'rm'), B('Seguridad', 'sg')], [B('Exportar mis datos', 'ex'), B('Borrar mis datos', 'dl')], MENU] };
-    case 'ex': { const j = JSON.stringify(u); return { text: j.length < 3800 ? j : `Tus datos son demasiado largos para mostrarlos acá (${j.length} caracteres). En esta versión de prueba, la exportación completa no está disponible.`, kb: [[B('Volver', 'se')]] }; }
-    case 'dl': return { text: 'Se borrarán todos tus datos: minutos, hitos, notas y mazo. No se puede deshacer.', kb: [[B('Sí, borrar todo', 'dl!'), B('Cancelar', 'se')]] };
+    case 'md': return { text: 'Mis datos\n\nGuardo tus minutos, tus avances y las palabras que agregás.', kb: [[B('Exportar', 'ex'), B('Borrar', 'dl')], [B('Volver', 'mas')]] };
+    case 'ex': { const j = JSON.stringify(u); return { text: j.length < 3800 ? j : `Tus datos son demasiado largos para mostrarlos acá (${j.length} caracteres). En esta versión de prueba, la exportación completa no está disponible.`, kb: [[B('Volver', 'md')]] }; }
+    case 'dl': return { text: 'Se borrarán todos tus datos: minutos, avances y palabras. No se puede deshacer.', kb: [[B('Sí, borrar todo', 'dl!'), B('Cancelar', 'md')]] };
     case 'dl!': ctx.deleted = true; return { text: 'Listo. Se borraron todos tus datos. Escribí /start para empezar de nuevo.', kb: [] };
-    default: return menu(u);
+    default: return menu(u); // incluye botones de mensajes viejos
   }
 }
 
@@ -414,21 +409,20 @@ function onText(u, text, ctx) {
     return u.testDone ? menu(u) : welcome();
   }
   if (cmd === '/menu') { u.awaiting = null; return menu(u); }
-  if (cmd === '/ayuda') return intro(0);
-  if (cmd === '/borrar') return route(u, 'dl', ctx);
+  if (cmd === '/ayuda') { u.awaiting = null; return intro(0); }
+  if (cmd === '/borrar') { u.awaiting = null; return route(u, 'dl', ctx); }
   const aw = u.awaiting; u.awaiting = null;
   if (aw === 'minutes') {
     const n = parseInt(t, 10), p = u.awaitingPractice || 0;
-    if (!(n >= 1 && n <= 600)) { u.awaiting = 'minutes'; return { text: 'Escribí un número de minutos entre 1 y 600.', kb: [MENU] }; }
+    if (!(n >= 1 && n <= 600)) { u.awaiting = 'minutes'; return { text: 'Escribí un número de minutos entre 1 y 600.', kb: [HOME] }; }
     u.awaitingPractice = 0;
-    return { text: logMinutes(u, p, n, p ? 'memoria' : 'manual'), kb: [[B('Dejar nota', 'note'), B('Menú', 'm')]] };
+    return logMinutes(u, p, n, 'memoria');
   }
-  if (aw === 'note') { u.notes.push({ day: L.dayKey(), text: t.slice(0, 500) }); return menu(u, 'Nota guardada.\n\n'); }
   if (aw === 'addword') {
     const w = t.toLowerCase().replace(/\s+/g, ' ').slice(0, 80);
-    if (!u.deck) u.deck = {};
+    ensureDeck(u);
     u.deck[w] = u.deck[w] || { box: 0, due: L.dayKey() };
-    return { text: `Agregada: ${w}`, kb: [[B('Agregar otra', 'mad'), B('Mi mazo', 'mz')]] };
+    return { text: `Agregada: ${w}`, kb: [[B('Agregar otra', 'mad'), B('Listo', 'm')]] };
   }
   return menu(u, 'Usá los botones para moverte.\n\n');
 }
@@ -439,19 +433,21 @@ async function handle(update, api) {
   if (!m || !m.chat || m.chat.type !== 'private') return;
   const chat = m.chat.id, ctx = {};
   const u = Object.assign(L.newUser(), store.get(chat) || {}); // completa campos de versiones anteriores
-  let screen, msgId = null;
-  if (cb) { await api.answer(cb.id); msgId = m.message_id; screen = route(u, cb.data || 'm', ctx); }
-  else if (msg.text) screen = onText(u, msg.text, ctx);
+  let out, msgId = null;
+  if (cb) { await api.answer(cb.id); msgId = m.message_id; u.awaiting = null; out = route(u, cb.data || 'm', ctx); }
+  else if (msg.text) out = onText(u, msg.text, ctx);
   else return;
   if (ctx.deleted) store.del(chat); else store.set(chat, u);
-  if (msgId) await api.edit(chat, msgId, screen); else await api.send(chat, screen);
+  for (const s of [].concat(out)) {
+    if (msgId && !s.fresh) await api.edit(chat, msgId, s); else await api.send(chat, s);
+  }
 }
 
 async function main() {
   if (!TOKEN) { console.error('Falta la variable de entorno TELEGRAM_BOT_TOKEN. Ver bot/README.md.'); process.exit(1); }
   const me = await tg('getMe');
   console.log(`Bot en línea: @${me.username}`);
-  await tg('setMyCommands', { commands: [{ command: 'menu', description: 'Menú principal' }, { command: 'ayuda', description: 'Cómo funciona' }, { command: 'borrar', description: 'Borrar mis datos' }] }).catch(() => {});
+  await tg('setMyCommands', { commands: [{ command: 'menu', description: 'Inicio' }, { command: 'ayuda', description: 'Cómo funciona' }, { command: 'borrar', description: 'Borrar mis datos' }] }).catch(() => {});
   sendReminders(realApi).catch((e) => console.error('recordatorios:', e.message));
   setInterval(() => sendReminders(realApi).catch((e) => console.error('recordatorios:', e.message)), 5 * 60 * 1000);
   let offset = 0;
@@ -466,5 +462,5 @@ async function main() {
   }
 }
 
-module.exports = { handle, route, onText, menu, tg, sendReminders };
+module.exports = { handle, route, onText, menu, tg, sendReminders, kbJson };
 if (require.main === module) main();

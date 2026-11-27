@@ -6,9 +6,9 @@ function addDays(key, n) { const d = new Date(key + 'T12:00:00Z'); d.setUTCDate(
 function fmtMin(total) { const h = Math.floor(total / 60), m = total % 60; return h ? `${h} h ${m} min` : `${m} min`; }
 
 const newUser = () => ({
-  start: 1, testDone: false, perfil: null, minutes: [], ratings: [], hitos: {}, notes: [],
-  deck: null, dose: null, sinSeparar: false, session: null, pending: null, awaiting: null,
-  flags: {}, rutas: [], fase2: 0, mantAbierto: false,
+  mode: null, start: 1, testDone: false, perfil: null, minutes: [], ratings: [], hitos: {}, notes: [],
+  deck: null, dose: null, session: null, pending: null, awaiting: null,
+  flags: {}, rutas: [], fase2: 0,
   rem: { on: false, hour: 20, last: null, ignored: 0 },
 });
 
@@ -23,6 +23,10 @@ function reminderDue(u, ts = Date.now()) {
   if (r.last === today) return false;
   return !u.minutes.some((e) => e.day === today);
 }
+
+// Minutos de una sesión cronometrada. Tope de 30 por si quedó abierta.
+const MAX_SESION = 30;
+const elapsedMin = (start, now = Date.now()) => Math.min(MAX_SESION, Math.max(1, Math.round((now - start) / 60000)));
 
 const totalMinutes = (u) => u.minutes.reduce((s, e) => s + e.min, 0);
 const practiceDays = (u) => new Set(u.minutes.map((e) => e.day));
@@ -43,9 +47,9 @@ const minutesInWindow = (u, today, from, to) => {
   return u.minutes.filter((e) => e.day >= lo && e.day <= hi).reduce((s, e) => s + e.min, 0);
 };
 
-// Un "Salió" cuenta si la pregunta de control no fue "no" (un solo golpe).
+// rating 's' = vibró. ctrl 'n' solo aparece en datos viejos (un solo golpe) y no cuenta.
 const salioOk = (r) => r.rating === 's' && r.ctrl !== 'n';
-// Una práctica se supera con "Salió" en 3 días distintos.
+// Una práctica se supera cuando vibra en 3 días distintos.
 const salioDays = (u, p) => new Set(u.ratings.filter((r) => r.practice === p && salioOk(r)).map((r) => r.day));
 const superada = (u, p) => salioDays(u, p).size >= 3;
 function hoy(u) {
@@ -76,4 +80,4 @@ function grade(card, g, today) {
   card.due = addDays(today, INTERVALOS[card.box]);
 }
 
-module.exports = { hourOf, reminderDue, practiceDays, salioOk, guidedSessions, derivacion, dayKey, addDays, fmtMin, newUser, totalMinutes, streak, daysInLast7, minutesInWindow, salioDays, superada, hoy, lastRatings, hasHistory, dueCards, grade, INTERVALOS };
+module.exports = { elapsedMin, MAX_SESION, hourOf, reminderDue, practiceDays, salioOk, guidedSessions, derivacion, dayKey, addDays, fmtMin, newUser, totalMinutes, streak, daysInLast7, minutesInWindow, salioDays, superada, hoy, lastRatings, hasHistory, dueCards, grade, INTERVALOS };
